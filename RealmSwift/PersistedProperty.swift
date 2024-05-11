@@ -1,20 +1,32 @@
-////////////////////////////////////////////////////////////////////////////
-//
-// Copyright 2021 Realm Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////
+/* ----------------------------------------------------------------
+ * :: :  M  E  T  A  V  E  R  S  E  :                            ::
+ * ----------------------------------------------------------------
+ * This software is Licensed under the terms of the Apache License,
+ * version 2.0 (the "Apache License") with the following additional
+ * modification; you may not use this file except within compliance
+ * of the Apache License and the following modification made to it.
+ * Section 6. Trademarks. is deleted and replaced with:
+ *
+ * Trademarks. This License does not grant permission to use any of
+ * its trade names, trademarks, service marks, or the product names
+ * of this Licensor or its affiliates, except as required to comply
+ * with Section 4(c.) of this License, and to reproduce the content
+ * of the NOTICE file.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND without even an
+ * implied warranty of MERCHANTABILITY, or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Apache License for more details.
+ *
+ * You should have received a copy for this software license of the
+ * Apache License along with this program; or, if not, please write
+ * to the Free Software Foundation Inc., with the following address
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *         Copyright (C) 2024 Wabi Foundation. All Rights Reserved.
+ * ----------------------------------------------------------------
+ *  . x x x . o o o . x x x . : : : .    o  x  o    . : : : .
+ * ---------------------------------------------------------------- */
 
 import Realm
 import Realm.Private
@@ -94,185 +106,218 @@ import Realm.Private
 ///  EmbeddedObject subclass and trying to use it in other places will result in
 ///  runtime errors.
 @propertyWrapper
-public struct Persisted<Value: _Persistable> {
-    private var storage: PropertyStorage<Value>
+public struct Persisted<Value: _Persistable>
+{
+  private var storage: PropertyStorage<Value>
 
-    /// :nodoc:
-    @available(*, unavailable, message: "@Persisted can only be used as a property on a Realm object")
-    public var wrappedValue: Value {
-        // The static subscript below is called instead of this when the property
-        // wrapper is used on an ObjectBase subclass, which is the only thing we support.
-        get { fatalError("called wrappedValue getter") }
-        // swiftlint:disable:next unused_setter_value
-        set { fatalError("called wrappedValue setter") }
-    }
+  /// :nodoc:
+  @available(*, unavailable, message: "@Persisted can only be used as a property on a Realm object")
+  public var wrappedValue: Value
+  {
+    // The static subscript below is called instead of this when the property
+    // wrapper is used on an ObjectBase subclass, which is the only thing we support.
+    get { fatalError("called wrappedValue getter") }
+    // swiftlint:disable:next unused_setter_value
+    set { fatalError("called wrappedValue setter") }
+  }
 
-    /// Declares a property which is lazily initialized to the type's default value.
-    public init() {
-        storage = .unmanagedNoDefault(indexed: false, primary: false)
+  /// Declares a property which is lazily initialized to the type's default value.
+  public init()
+  {
+    storage = .unmanagedNoDefault(indexed: false, primary: false)
+  }
+
+  /// Declares a property which defaults to the given value.
+  public init(wrappedValue value: Value)
+  {
+    storage = .unmanaged(value: value, indexed: false, primary: false)
+  }
+
+  /// :nodoc:
+  public static subscript<EnclosingSelf: ObjectBase>(
+    _enclosingInstance observed: EnclosingSelf,
+    wrapped _: ReferenceWritableKeyPath<EnclosingSelf, Value>,
+    storage storageKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Self>
+  ) -> Value
+  {
+    get
+    {
+      observed[keyPath: storageKeyPath].get(observed)
     }
-    /// Declares a property which defaults to the given value.
-    public init(wrappedValue value: Value) {
+    set
+    {
+      observed[keyPath: storageKeyPath].set(observed, value: newValue)
+    }
+  }
+
+  /// Called via RLMInitializeSwiftAccessor() to initialize the wrapper on a
+  /// newly created managed accessor object.
+  mutating func initialize(_: ObjectBase, key: PropertyKey)
+  {
+    storage = .managed(key: key)
+  }
+
+  /// Collection types use this instead of the above because when promoting a
+  /// unmanaged object to a managed object we want to reuse the existing collection
+  /// object if it exists. Currently it always will exist because we read the
+  /// value of the property first, but there's a potential optimization to
+  /// skip initializing it on that read.
+  mutating func initializeCollection(_: ObjectBase, key: PropertyKey) -> Value?
+  {
+    if case let .unmanaged(value, _, _) = storage
+    {
+      storage = .managedCached(value: value, key: key)
+      return value
+    }
+    if case let .unmanagedObserved(value, _) = storage
+    {
+      storage = .managedCached(value: value, key: key)
+      return value
+    }
+    storage = .managed(key: key)
+    return nil
+  }
+
+  mutating func get(_ object: ObjectBase) -> Value
+  {
+    switch storage
+    {
+      case let .unmanaged(value, _, _):
+        return value
+      case .unmanagedNoDefault:
+        let value = Value._rlmDefaultValue()
+        storage = .unmanaged(value: value)
+        return value
+      case let .unmanagedObserved(value, key):
+        if let lastAccessedNames = object.lastAccessedNames
+        {
+          let name: String = if Value._rlmType == .linkingObjects
+          {
+            RLMObjectBaseObjectSchema(object)!.computedProperties[Int(key)].name
+          }
+          else
+          {
+            RLMObjectBaseObjectSchema(object)!.properties[Int(key)].name
+          }
+          lastAccessedNames.add(name)
+          if let type = Value.self as? KeypathRecorder.Type
+          {
+            return type.keyPathRecorder(with: lastAccessedNames) as! Value
+          }
+          return Value._rlmDefaultValue()
+        }
+        return value
+      case let .managed(key):
+        let v = Value._rlmGetProperty(object, key)
+        if Value._rlmRequiresCaching
+        {
+          // Collection types are initialized once and stored on the
+          // object rather than on every access. Non-collection types
+          // cannot be cached without some mechanism for knowing when to
+          // reread them which we don't currently have.
+          storage = .managedCached(value: v, key: key)
+        }
+        return v
+      case let .managedCached(value, _):
+        return value
+    }
+  }
+
+  mutating func set(_ object: ObjectBase, value: Value)
+  {
+    if value is MutableRealmCollection
+    {
+      (get(object) as! MutableRealmCollection).assign(value)
+      return
+    }
+    switch storage
+    {
+      case let .unmanagedObserved(_, key):
+        let name = RLMObjectBaseObjectSchema(object)!.properties[Int(key)].name
+        object.willChangeValue(forKey: name)
+        storage = .unmanagedObserved(value: value, key: key)
+        object.didChangeValue(forKey: name)
+      case let .managed(key), let .managedCached(_, key):
+        Value._rlmSetProperty(object, key, value)
+      case .unmanaged, .unmanagedNoDefault:
         storage = .unmanaged(value: value, indexed: false, primary: false)
     }
+  }
 
-    /// :nodoc:
-    public static subscript<EnclosingSelf: ObjectBase>(
-        _enclosingInstance observed: EnclosingSelf,
-        wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Value>,
-        storage storageKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Self>
-        ) -> Value {
-        get {
-            return observed[keyPath: storageKeyPath].get(observed)
-        }
-        set {
-            observed[keyPath: storageKeyPath].set(observed, value: newValue)
-        }
+  /// Initialize an unmanaged property for observation
+  mutating func observe(_ object: ObjectBase, property: RLMProperty)
+  {
+    let value: Value
+    switch storage
+    {
+      case let .unmanaged(v, _, _):
+        value = v
+      case .unmanagedNoDefault:
+        value = Value._rlmDefaultValue()
+      case .unmanagedObserved, .managed, .managedCached:
+        return
     }
-
-    // Called via RLMInitializeSwiftAccessor() to initialize the wrapper on a
-    // newly created managed accessor object.
-    internal mutating func initialize(_ object: ObjectBase, key: PropertyKey) {
-        storage = .managed(key: key)
+    // Mutating a collection triggers a KVO notification on the parent, so
+    // we need to ensure that the collection has a pointer to its parent.
+    if let value = value as? MutableRealmCollection
+    {
+      value.setParent(object, property)
     }
-
-    // Collection types use this instead of the above because when promoting a
-    // unmanaged object to a managed object we want to reuse the existing collection
-    // object if it exists. Currently it always will exist because we read the
-    // value of the property first, but there's a potential optimization to
-    // skip initializing it on that read.
-    internal mutating func initializeCollection(_ object: ObjectBase, key: PropertyKey) -> Value? {
-        if case let .unmanaged(value, _, _) = storage {
-            storage = .managedCached(value: value, key: key)
-            return value
-        }
-        if case let .unmanagedObserved(value, _) = storage {
-            storage = .managedCached(value: value, key: key)
-            return value
-        }
-        storage = .managed(key: key)
-        return nil
-    }
-
-    internal mutating func get(_ object: ObjectBase) -> Value {
-        switch storage {
-        case let .unmanaged(value, _, _):
-            return value
-        case .unmanagedNoDefault:
-            let value = Value._rlmDefaultValue()
-            storage = .unmanaged(value: value)
-            return value
-        case let .unmanagedObserved(value, key):
-            if let lastAccessedNames = object.lastAccessedNames {
-                let name: String
-                if Value._rlmType == .linkingObjects {
-                    name = RLMObjectBaseObjectSchema(object)!.computedProperties[Int(key)].name
-                } else {
-                    name = RLMObjectBaseObjectSchema(object)!.properties[Int(key)].name
-                }
-                lastAccessedNames.add(name)
-                if let type = Value.self as? KeypathRecorder.Type {
-                    return type.keyPathRecorder(with: lastAccessedNames) as! Value
-                }
-                return Value._rlmDefaultValue()
-            }
-            return value
-        case let .managed(key):
-            let v = Value._rlmGetProperty(object, key)
-            if Value._rlmRequiresCaching {
-                // Collection types are initialized once and stored on the
-                // object rather than on every access. Non-collection types
-                // cannot be cached without some mechanism for knowing when to
-                // reread them which we don't currently have.
-                storage = .managedCached(value: v, key: key)
-            }
-            return v
-        case let .managedCached(value, _):
-            return value
-        }
-    }
-
-    internal mutating func set(_ object: ObjectBase, value: Value) {
-        if value is MutableRealmCollection {
-            (get(object) as! MutableRealmCollection).assign(value)
-            return
-        }
-        switch storage {
-        case let .unmanagedObserved(_, key):
-            let name = RLMObjectBaseObjectSchema(object)!.properties[Int(key)].name
-            object.willChangeValue(forKey: name)
-            storage = .unmanagedObserved(value: value, key: key)
-            object.didChangeValue(forKey: name)
-        case .managed(let key), .managedCached(_, let key):
-            Value._rlmSetProperty(object, key, value)
-        case .unmanaged, .unmanagedNoDefault:
-            storage = .unmanaged(value: value, indexed: false, primary: false)
-        }
-    }
-
-    // Initialize an unmanaged property for observation
-    internal mutating func observe(_ object: ObjectBase, property: RLMProperty) {
-        let value: Value
-        switch storage {
-        case let .unmanaged(v, _, _):
-            value = v
-        case .unmanagedNoDefault:
-            value = Value._rlmDefaultValue()
-        case .unmanagedObserved, .managed, .managedCached:
-            return
-        }
-        // Mutating a collection triggers a KVO notification on the parent, so
-        // we need to ensure that the collection has a pointer to its parent.
-        if let value = value as? MutableRealmCollection {
-            value.setParent(object, property)
-        }
-        storage = .unmanagedObserved(value: value, key: PropertyKey(property.index))
-    }
+    storage = .unmanagedObserved(value: value, key: PropertyKey(property.index))
+  }
 }
 
-extension Persisted: Decodable where Value: Decodable {
-    public init(from decoder: Decoder) throws {
-        storage = .unmanaged(value: try decoder.decodeOptional(Value.self), indexed: false, primary: false)
-    }
+extension Persisted: Decodable where Value: Decodable
+{
+  public init(from decoder: Decoder) throws
+  {
+    storage = try .unmanaged(value: decoder.decodeOptional(Value.self), indexed: false, primary: false)
+  }
 }
 
-extension Persisted: Encodable where Value: Encodable {
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch storage {
-        case .unmanaged(let value, _, _):
-            try container.encode(value)
-        case .unmanagedObserved(let value, _):
-            try container.encode(value)
-        case .unmanagedNoDefault:
-            try container.encode(Value._rlmDefaultValue())
-        default:
-            // We need a reference to the parent object to be able to read from
-            // a managed property. There's probably a way to do this with some
-            // sort of custom adapter that keeps track of the current parent
-            // at each level of recursion, but it's not trivial.
-            throw EncodingError.invalidValue(self, .init(codingPath: encoder.codingPath, debugDescription: "Only unmanaged Realm objects can be encoded using automatic Codable synthesis. You must explicitly define encode(to:) on your model class to support managed Realm objects."))
-        }
+extension Persisted: Encodable where Value: Encodable
+{
+  public func encode(to encoder: Encoder) throws
+  {
+    var container = encoder.singleValueContainer()
+    switch storage
+    {
+      case let .unmanaged(value, _, _):
+        try container.encode(value)
+      case let .unmanagedObserved(value, _):
+        try container.encode(value)
+      case .unmanagedNoDefault:
+        try container.encode(Value._rlmDefaultValue())
+      default:
+        // We need a reference to the parent object to be able to read from
+        // a managed property. There's probably a way to do this with some
+        // sort of custom adapter that keeps track of the current parent
+        // at each level of recursion, but it's not trivial.
+        throw EncodingError.invalidValue(self, .init(codingPath: encoder.codingPath, debugDescription: "Only unmanaged Realm objects can be encoded using automatic Codable synthesis. You must explicitly define encode(to:) on your model class to support managed Realm objects."))
     }
+  }
 }
 
 /// :nodoc:
 /// Protocol for a PropertyWrapper to properly handle Coding when the wrappedValue is Optional
-public protocol OptionalCodingWrapper {
-    associatedtype WrappedType: ExpressibleByNilLiteral
-    init(wrappedValue: WrappedType)
+public protocol OptionalCodingWrapper
+{
+  associatedtype WrappedType: ExpressibleByNilLiteral
+  init(wrappedValue: WrappedType)
 }
 
 /// :nodoc:
-extension KeyedDecodingContainer {
-    // This is used to override the default decoding behaviour for OptionalCodingWrapper to allow a value to avoid a missing key Error
-    public func decode<T>(_ type: T.Type, forKey key: KeyedDecodingContainer<K>.Key) throws -> T where T: Decodable, T: OptionalCodingWrapper {
-        return try decodeIfPresent(T.self, forKey: key) ?? T(wrappedValue: nil)
-    }
+public extension KeyedDecodingContainer
+{
+  /// This is used to override the default decoding behaviour for OptionalCodingWrapper to allow a value to avoid a missing key Error
+  func decode<T>(_: T.Type, forKey key: KeyedDecodingContainer<K>.Key) throws -> T where T: Decodable, T: OptionalCodingWrapper
+  {
+    try decodeIfPresent(T.self, forKey: key) ?? T(wrappedValue: nil)
+  }
 }
 
-extension Persisted: OptionalCodingWrapper where Value: ExpressibleByNilLiteral {
-}
+extension Persisted: OptionalCodingWrapper where Value: ExpressibleByNilLiteral
+{}
 
 /**
  An enum type which can be used with @Persisted and Realm Collections.
@@ -298,20 +343,24 @@ extension Persisted: OptionalCodingWrapper where Value: ExpressibleByNilLiteral 
  are valid), optional enum properties will return `nil`, and non-optional
  properties will abort the process.
  */
-public protocol PersistableEnum: _PersistableInsideOptional, RawRepresentable, CaseIterable, RealmEnum, _RealmCollectionValueInsideOptional, MinMaxType, Comparable where RawValue: Comparable {
-}
+public protocol PersistableEnum: _PersistableInsideOptional, RawRepresentable, CaseIterable, RealmEnum, _RealmCollectionValueInsideOptional, MinMaxType, Comparable where RawValue: Comparable
+{}
 
-extension PersistableEnum {
-    /// :nodoc:
-    public init() { self = Self.allCases.first! }
-    /// :nodoc:
-    public static func < (lhs: Self, rhs: Self) -> Bool {
-        return lhs.rawValue < rhs.rawValue
-    }
-    /// :nodoc:
-    public static func _rlmDefaultValue() -> Self {
-        Self.allCases.first!
-    }
+public extension PersistableEnum
+{
+  /// :nodoc:
+  init() { self = Self.allCases.first! }
+  /// :nodoc:
+  static func < (lhs: Self, rhs: Self) -> Bool
+  {
+    lhs.rawValue < rhs.rawValue
+  }
+
+  /// :nodoc:
+  static func _rlmDefaultValue() -> Self
+  {
+    allCases.first!
+  }
 }
 
 /// A type which can be indexed.
@@ -320,15 +369,19 @@ extension PersistableEnum {
 /// to it will simply result in runtime errors rather than compile-time errors.
 @_marker public protocol _Indexable {}
 
-extension Persisted where Value.PersistedType: _Indexable {
-    /// Declares an indexed property which is lazily initialized to the type's default value.
-    public init(indexed: Bool) {
-        storage = .unmanagedNoDefault(indexed: indexed)
-    }
-    /// Declares an indexed property which defaults to the given value.
-    public init(wrappedValue value: Value, indexed: Bool) {
-        storage = .unmanaged(value: value, indexed: indexed)
-    }
+public extension Persisted where Value.PersistedType: _Indexable
+{
+  /// Declares an indexed property which is lazily initialized to the type's default value.
+  init(indexed: Bool)
+  {
+    storage = .unmanagedNoDefault(indexed: indexed)
+  }
+
+  /// Declares an indexed property which defaults to the given value.
+  init(wrappedValue value: Value, indexed: Bool)
+  {
+    storage = .unmanaged(value: value, indexed: indexed)
+  }
 }
 
 /// A type which can be made the primary key of an object.
@@ -337,108 +390,123 @@ extension Persisted where Value.PersistedType: _Indexable {
 /// to it will simply result in runtime errors rather than compile-time errors.
 @_marker public protocol _PrimaryKey {}
 
-extension Persisted where Value.PersistedType: _PrimaryKey {
-    /// Declares the primary key property which is lazily initialized to the type's default value.
-    public init(primaryKey: Bool) {
-        storage = .unmanagedNoDefault(primary: primaryKey)
-    }
-    /// Declares the primary key property which defaults to the given value.
-    public init(wrappedValue value: Value, primaryKey: Bool) {
-        storage = .unmanaged(value: value, primary: primaryKey)
-    }
+public extension Persisted where Value.PersistedType: _PrimaryKey
+{
+  /// Declares the primary key property which is lazily initialized to the type's default value.
+  init(primaryKey: Bool)
+  {
+    storage = .unmanagedNoDefault(primary: primaryKey)
+  }
+
+  /// Declares the primary key property which defaults to the given value.
+  init(wrappedValue value: Value, primaryKey: Bool)
+  {
+    storage = .unmanaged(value: value, primary: primaryKey)
+  }
 }
 
-// Constraining the LinkingObjects initializer to only LinkingObjects require
-// doing so via a protocol which only that type conforms to.
+/// Constraining the LinkingObjects initializer to only LinkingObjects require
+/// doing so via a protocol which only that type conforms to.
 /// :nodoc:
-public protocol LinkingObjectsProtocol {
-    init(fromType: Element.Type, property: String)
-    associatedtype Element
+public protocol LinkingObjectsProtocol
+{
+  init(fromType: Element.Type, property: String)
+  associatedtype Element
 }
-extension Persisted where Value: LinkingObjectsProtocol {
-    /// Declares a LinkingObjects property with the given origin property name.
-    ///
-    /// - param originProperty: The name of the property on the linking object type which links to this object.
-    public init(originProperty: String) {
-        self.init(wrappedValue: Value(fromType: Value.Element.self, property: originProperty))
-    }
+
+public extension Persisted where Value: LinkingObjectsProtocol
+{
+  /// Declares a LinkingObjects property with the given origin property name.
+  ///
+  /// - param originProperty: The name of the property on the linking object type which links to this object.
+  init(originProperty: String)
+  {
+    self.init(wrappedValue: Value(fromType: Value.Element.self, property: originProperty))
+  }
 }
+
 extension LinkingObjects: LinkingObjectsProtocol {}
 
 // MARK: - Implementation
 
 /// :nodoc:
-extension Persisted: DiscoverablePersistedProperty where Value: _Persistable {
-    public static var _rlmType: PropertyType { Value._rlmType }
-    public static var _rlmOptional: Bool { Value._rlmOptional }
-    public static var _rlmRequireObjc: Bool { false }
-    public static func _rlmPopulateProperty(_ prop: RLMProperty) {
-        // The label reported by Mirror has an underscore prefix added to it
-        // as it's the actual storage rather than the compiler-magic getter/setter
-        prop.name = String(prop.name.dropFirst())
-        Value._rlmPopulateProperty(prop)
-        Value._rlmSetAccessor(prop)
+extension Persisted: DiscoverablePersistedProperty where Value: _Persistable
+{
+  public static var _rlmType: PropertyType { Value._rlmType }
+  public static var _rlmOptional: Bool { Value._rlmOptional }
+  public static var _rlmRequireObjc: Bool { false }
+  public static func _rlmPopulateProperty(_ prop: RLMProperty)
+  {
+    // The label reported by Mirror has an underscore prefix added to it
+    // as it's the actual storage rather than the compiler-magic getter/setter
+    prop.name = String(prop.name.dropFirst())
+    Value._rlmPopulateProperty(prop)
+    Value._rlmSetAccessor(prop)
+  }
+
+  public func _rlmPopulateProperty(_ prop: RLMProperty)
+  {
+    switch storage
+    {
+      case let .unmanaged(value, indexed, primary):
+        value._rlmPopulateProperty(prop)
+        prop.indexed = indexed || primary
+        prop.isPrimary = primary
+      case let .unmanagedNoDefault(indexed, primary):
+        prop.indexed = indexed || primary
+        prop.isPrimary = primary
+      default:
+        fatalError()
     }
-    public func _rlmPopulateProperty(_ prop: RLMProperty) {
-        switch storage {
-        case let .unmanaged(value, indexed, primary):
-            value._rlmPopulateProperty(prop)
-            prop.indexed = indexed || primary
-            prop.isPrimary = primary
-        case let .unmanagedNoDefault(indexed, primary):
-            prop.indexed = indexed || primary
-            prop.isPrimary = primary
-        default:
-            fatalError()
-        }
-    }
+  }
 }
 
-// The actual storage for modern properties on objects.
-//
-// A newly created @Persisted will be either .unmanaged or .unmanagedNoDefault
-// depending on whether the user supplied a default value with `= value` when
-// defining the property. .unmanagedNoDefault turns into .unmanaged the first
-// time the property is read from, using a default value generated for the type.
-// If an unmanaged object is observed, that specific property is switched to
-// .unmanagedObserved so that the property can look up its name in the setter.
-//
-// When a new managed accessor is created, all properties are set to .managed.
-// When an existing unmanaged object is added to a Realm, existing non-collection
-// properties are set to .unmanaged, and collections are set to .managedCached,
-// reusing the existing instance of the collection (which are themselves promoted
-// to managed).
-//
-// The indexed and primary members of the unmanaged cases are used only for
-// schema discovery and are not always preserved once the Persisted is actually
-// used for anything.
-private enum PropertyStorage<T> {
-    // An unmanaged value. This is used as the initial state if the user did
-    // supply a default value, or if an unmanaged property is read or written
-    // (but not observed).
-    case unmanaged(value: T, indexed: Bool = false, primary: Bool = false)
+/// The actual storage for modern properties on objects.
+///
+/// A newly created @Persisted will be either .unmanaged or .unmanagedNoDefault
+/// depending on whether the user supplied a default value with `= value` when
+/// defining the property. .unmanagedNoDefault turns into .unmanaged the first
+/// time the property is read from, using a default value generated for the type.
+/// If an unmanaged object is observed, that specific property is switched to
+/// .unmanagedObserved so that the property can look up its name in the setter.
+///
+/// When a new managed accessor is created, all properties are set to .managed.
+/// When an existing unmanaged object is added to a Realm, existing non-collection
+/// properties are set to .unmanaged, and collections are set to .managedCached,
+/// reusing the existing instance of the collection (which are themselves promoted
+/// to managed).
+///
+/// The indexed and primary members of the unmanaged cases are used only for
+/// schema discovery and are not always preserved once the Persisted is actually
+/// used for anything.
+private enum PropertyStorage<T>
+{
+  /// An unmanaged value. This is used as the initial state if the user did
+  /// supply a default value, or if an unmanaged property is read or written
+  /// (but not observed).
+  case unmanaged(value: T, indexed: Bool = false, primary: Bool = false)
 
-    // The property is unmanaged and does not yet have a value. This state is
-    // used if the user does not supply a default value in their model definition
-    // and will be converted to the zero/empty value for the type when this
-    // property is first used.
-    case unmanagedNoDefault(indexed: Bool = false, primary: Bool = false)
+  /// The property is unmanaged and does not yet have a value. This state is
+  /// used if the user does not supply a default value in their model definition
+  /// and will be converted to the zero/empty value for the type when this
+  /// property is first used.
+  case unmanagedNoDefault(indexed: Bool = false, primary: Bool = false)
 
-    // The property is unmanaged and the parent object has (or previously had)
-    // KVO observers, so we performed the additional initialization to set the
-    // property key on each property. We do not track indexed/primary in this
-    // state because those are needed only for schema discovery. An unmanaged
-    // property never transitions from this state back to .unmanaged.
-    case unmanagedObserved(value: T, key: PropertyKey)
+  /// The property is unmanaged and the parent object has (or previously had)
+  /// KVO observers, so we performed the additional initialization to set the
+  /// property key on each property. We do not track indexed/primary in this
+  /// state because those are needed only for schema discovery. An unmanaged
+  /// property never transitions from this state back to .unmanaged.
+  case unmanagedObserved(value: T, key: PropertyKey)
 
-    // The property is managed and so only needs to store the key to get/set
-    // the value on the parent object.
-    case managed(key: PropertyKey)
+  /// The property is managed and so only needs to store the key to get/set
+  /// the value on the parent object.
+  case managed(key: PropertyKey)
 
-    // The property is managed and is storing a value which will be returned each
-    // time. This is used only for collection properties, which are themselves
-    // live objects and so only need to be created once. Caching them is both a
-    // performance optimization (creating them involves a few memory allocations)
-    // and is required for KVO to work correctly.
-    case managedCached(value: T, key: PropertyKey)
+  /// The property is managed and is storing a value which will be returned each
+  /// time. This is used only for collection properties, which are themselves
+  /// live objects and so only need to be created once. Caching them is both a
+  /// performance optimization (creating them involves a few memory allocations)
+  /// and is required for KVO to work correctly.
+  case managedCached(value: T, key: PropertyKey)
 }

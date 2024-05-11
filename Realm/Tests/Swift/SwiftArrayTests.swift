@@ -1,516 +1,546 @@
-////////////////////////////////////////////////////////////////////////////
-//
-// Copyright 2014 Realm Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////
+/* ----------------------------------------------------------------
+ * :: :  M  E  T  A  V  E  R  S  E  :                            ::
+ * ----------------------------------------------------------------
+ * This software is Licensed under the terms of the Apache License,
+ * version 2.0 (the "Apache License") with the following additional
+ * modification; you may not use this file except within compliance
+ * of the Apache License and the following modification made to it.
+ * Section 6. Trademarks. is deleted and replaced with:
+ *
+ * Trademarks. This License does not grant permission to use any of
+ * its trade names, trademarks, service marks, or the product names
+ * of this Licensor or its affiliates, except as required to comply
+ * with Section 4(c.) of this License, and to reproduce the content
+ * of the NOTICE file.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND without even an
+ * implied warranty of MERCHANTABILITY, or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Apache License for more details.
+ *
+ * You should have received a copy for this software license of the
+ * Apache License along with this program; or, if not, please write
+ * to the Free Software Foundation Inc., with the following address
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *         Copyright (C) 2024 Wabi Foundation. All Rights Reserved.
+ * ----------------------------------------------------------------
+ *  . x x x . o o o . x x x . : : : .    o  x  o    . : : : .
+ * ---------------------------------------------------------------- */
 
 import Foundation
 import Realm
 import XCTest
 
 #if canImport(RealmTestSupport)
-import RealmTestSupport
+  import RealmTestSupport
 #endif
 
-class SwiftRLMArrayTests: RLMTestCase {
+class SwiftRLMArrayTests: RLMTestCase
+{
+  // Swift models
 
-    // Swift models
+  func testFastEnumeration()
+  {
+    let realm = realmWithTestPath()
 
-    func testFastEnumeration() {
-        let realm = realmWithTestPath()
+    realm.beginWriteTransaction()
 
-        realm.beginWriteTransaction()
+    let dateMinInput = Date()
+    let dateMaxInput = dateMinInput.addingTimeInterval(1000)
 
-        let dateMinInput = Date()
-        let dateMaxInput = dateMinInput.addingTimeInterval(1000)
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
 
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+    try! realm.commitWriteTransaction()
 
-        try! realm.commitWriteTransaction()
+    let result = SwiftRLMAggregateObject.objects(in: realm, where: "intCol < %d", 100)
+    XCTAssertEqual(result.count, UInt(10), "10 objects added")
 
-        let result = SwiftRLMAggregateObject.objects(in: realm, where: "intCol < %d", 100)
-        XCTAssertEqual(result.count, UInt(10), "10 objects added")
+    var totalSum = 0
 
-        var totalSum = 0
-
-        for obj in result {
-            if let ao = obj as? SwiftRLMAggregateObject {
-                totalSum += ao.intCol
-            }
-        }
-
-        XCTAssertEqual(totalSum, 100, "total sum should be 100")
+    for obj in result
+    {
+      if let ao = obj as? SwiftRLMAggregateObject
+      {
+        totalSum += ao.intCol
+      }
     }
 
-    func testObjectAggregate() {
-        let realm = realmWithTestPath()
+    XCTAssertEqual(totalSum, 100, "total sum should be 100")
+  }
 
-        realm.beginWriteTransaction()
+  func testObjectAggregate()
+  {
+    let realm = realmWithTestPath()
 
-        let dateMinInput = Date()
-        let dateMaxInput = dateMinInput.addingTimeInterval(1000)
+    realm.beginWriteTransaction()
 
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    let dateMinInput = Date()
+    let dateMaxInput = dateMinInput.addingTimeInterval(1000)
 
-        try! realm.commitWriteTransaction()
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = SwiftRLMAggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
 
-        let noArray = SwiftRLMAggregateObject.objects(in: realm, where: "boolCol == NO")
-        let yesArray = SwiftRLMAggregateObject.objects(in: realm, where: "boolCol == YES")
+    try! realm.commitWriteTransaction()
 
-        // SUM ::::::::::::::::::::::::::::::::::::::::::::::
-        // Test int sum
-        XCTAssertEqual(noArray.sum(ofProperty: "intCol").intValue, 4, "Sum should be 4")
-        XCTAssertEqual(yesArray.sum(ofProperty: "intCol").intValue, 0, "Sum should be 0")
+    let noArray = SwiftRLMAggregateObject.objects(in: realm, where: "boolCol == NO")
+    let yesArray = SwiftRLMAggregateObject.objects(in: realm, where: "boolCol == YES")
 
-        // Test float sum
-        XCTAssertEqual(noArray.sum(ofProperty: "floatCol").floatValue, Float(0), accuracy: 0.1, "Sum should be 0.0")
-        XCTAssertEqual(yesArray.sum(ofProperty: "floatCol").floatValue, Float(7.2), accuracy: 0.1, "Sum should be 7.2")
+    // SUM ::::::::::::::::::::::::::::::::::::::::::::::
+    // Test int sum
+    XCTAssertEqual(noArray.sum(ofProperty: "intCol").intValue, 4, "Sum should be 4")
+    XCTAssertEqual(yesArray.sum(ofProperty: "intCol").intValue, 0, "Sum should be 0")
 
-        // Test double sum
-        XCTAssertEqual(noArray.sum(ofProperty: "doubleCol").doubleValue, Double(10), accuracy: 0.1, "Sum should be 10.0")
-        XCTAssertEqual(yesArray.sum(ofProperty: "doubleCol").doubleValue, Double(0), accuracy: 0.1, "Sum should be 0.0")
+    // Test float sum
+    XCTAssertEqual(noArray.sum(ofProperty: "floatCol").floatValue, Float(0), accuracy: 0.1, "Sum should be 0.0")
+    XCTAssertEqual(yesArray.sum(ofProperty: "floatCol").floatValue, Float(7.2), accuracy: 0.1, "Sum should be 7.2")
 
-        // Average ::::::::::::::::::::::::::::::::::::::::::::::
-        // Test int average
-        XCTAssertEqual(noArray.average(ofProperty: "intCol")!.doubleValue, Double(1), accuracy: 0.1, "Average should be 1.0")
-        XCTAssertEqual(yesArray.average(ofProperty: "intCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
+    // Test double sum
+    XCTAssertEqual(noArray.sum(ofProperty: "doubleCol").doubleValue, Double(10), accuracy: 0.1, "Sum should be 10.0")
+    XCTAssertEqual(yesArray.sum(ofProperty: "doubleCol").doubleValue, Double(0), accuracy: 0.1, "Sum should be 0.0")
 
-        // Test float average
-        XCTAssertEqual(noArray.average(ofProperty: "floatCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
-        XCTAssertEqual(yesArray.average(ofProperty: "floatCol")!.doubleValue, Double(1.2), accuracy: 0.1, "Average should be 1.2")
+    // Average ::::::::::::::::::::::::::::::::::::::::::::::
+    // Test int average
+    XCTAssertEqual(noArray.average(ofProperty: "intCol")!.doubleValue, Double(1), accuracy: 0.1, "Average should be 1.0")
+    XCTAssertEqual(yesArray.average(ofProperty: "intCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
 
-        // Test double average
-        XCTAssertEqual(noArray.average(ofProperty: "doubleCol")!.doubleValue, Double(2.5), accuracy: 0.1, "Average should be 2.5")
-        XCTAssertEqual(yesArray.average(ofProperty: "doubleCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
+    // Test float average
+    XCTAssertEqual(noArray.average(ofProperty: "floatCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
+    XCTAssertEqual(yesArray.average(ofProperty: "floatCol")!.doubleValue, Double(1.2), accuracy: 0.1, "Average should be 1.2")
 
-        // MIN ::::::::::::::::::::::::::::::::::::::::::::::
-        // Test int min
-        var min = noArray.min(ofProperty: "intCol") as! NSNumber
-        XCTAssertEqual(min.int32Value, Int32(1), "Minimum should be 1")
-        min = yesArray.min(ofProperty: "intCol") as! NSNumber
-        XCTAssertEqual(min.int32Value, Int32(0), "Minimum should be 0")
+    // Test double average
+    XCTAssertEqual(noArray.average(ofProperty: "doubleCol")!.doubleValue, Double(2.5), accuracy: 0.1, "Average should be 2.5")
+    XCTAssertEqual(yesArray.average(ofProperty: "doubleCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
 
-        // Test float min
-        min = noArray.min(ofProperty: "floatCol") as! NSNumber
-        XCTAssertEqual(min.floatValue, Float(0), accuracy: 0.1, "Minimum should be 0.0f")
-        min = yesArray.min(ofProperty: "floatCol") as! NSNumber
-        XCTAssertEqual(min.floatValue, Float(1.2), accuracy: 0.1, "Minimum should be 1.2f")
+    // MIN ::::::::::::::::::::::::::::::::::::::::::::::
+    // Test int min
+    var min = noArray.min(ofProperty: "intCol") as! NSNumber
+    XCTAssertEqual(min.int32Value, Int32(1), "Minimum should be 1")
+    min = yesArray.min(ofProperty: "intCol") as! NSNumber
+    XCTAssertEqual(min.int32Value, Int32(0), "Minimum should be 0")
 
-        // Test double min
-        min = noArray.min(ofProperty: "doubleCol") as! NSNumber
-        XCTAssertEqual(min.doubleValue, Double(2.5), accuracy: 0.1, "Minimum should be 2.5")
-        min = yesArray.min(ofProperty: "doubleCol") as! NSNumber
-        XCTAssertEqual(min.doubleValue, Double(0), accuracy: 0.1, "Minimum should be 0.0")
+    // Test float min
+    min = noArray.min(ofProperty: "floatCol") as! NSNumber
+    XCTAssertEqual(min.floatValue, Float(0), accuracy: 0.1, "Minimum should be 0.0f")
+    min = yesArray.min(ofProperty: "floatCol") as! NSNumber
+    XCTAssertEqual(min.floatValue, Float(1.2), accuracy: 0.1, "Minimum should be 1.2f")
 
-        // Test date min
-        var dateMinOutput = noArray.min(ofProperty: "dateCol") as! Date
-        XCTAssertEqual(dateMinOutput, dateMaxInput, "Minimum should be dateMaxInput")
-        dateMinOutput = yesArray.min(ofProperty: "dateCol") as! Date
-        XCTAssertEqual(dateMinOutput, dateMinInput, "Minimum should be dateMinInput")
+    // Test double min
+    min = noArray.min(ofProperty: "doubleCol") as! NSNumber
+    XCTAssertEqual(min.doubleValue, Double(2.5), accuracy: 0.1, "Minimum should be 2.5")
+    min = yesArray.min(ofProperty: "doubleCol") as! NSNumber
+    XCTAssertEqual(min.doubleValue, Double(0), accuracy: 0.1, "Minimum should be 0.0")
 
-        // MAX ::::::::::::::::::::::::::::::::::::::::::::::
-        // Test int max
-        var max = noArray.max(ofProperty: "intCol") as! NSNumber
-        XCTAssertEqual(max.intValue, 1, "Maximum should be 8")
-        max = yesArray.max(ofProperty: "intCol") as! NSNumber
-        XCTAssertEqual(max.intValue, 0, "Maximum should be 10")
+    // Test date min
+    var dateMinOutput = noArray.min(ofProperty: "dateCol") as! Date
+    XCTAssertEqual(dateMinOutput, dateMaxInput, "Minimum should be dateMaxInput")
+    dateMinOutput = yesArray.min(ofProperty: "dateCol") as! Date
+    XCTAssertEqual(dateMinOutput, dateMinInput, "Minimum should be dateMinInput")
 
-        // Test float max
-        max = noArray.max(ofProperty: "floatCol") as! NSNumber
-        XCTAssertEqual(max.floatValue, Float(0), accuracy: 0.1, "Maximum should be 0.0f")
-        max = yesArray.max(ofProperty: "floatCol") as! NSNumber
-        XCTAssertEqual(max.floatValue, Float(1.2), accuracy: 0.1, "Maximum should be 1.2f")
+    // MAX ::::::::::::::::::::::::::::::::::::::::::::::
+    // Test int max
+    var max = noArray.max(ofProperty: "intCol") as! NSNumber
+    XCTAssertEqual(max.intValue, 1, "Maximum should be 8")
+    max = yesArray.max(ofProperty: "intCol") as! NSNumber
+    XCTAssertEqual(max.intValue, 0, "Maximum should be 10")
 
-        // Test double max
-        max = noArray.max(ofProperty: "doubleCol") as! NSNumber
-        XCTAssertEqual(max.doubleValue, Double(2.5), accuracy: 0.1, "Maximum should be 2.5")
-        max = yesArray.max(ofProperty: "doubleCol") as! NSNumber
-        XCTAssertEqual(max.doubleValue, Double(0), accuracy: 0.1, "Maximum should be 0.0")
+    // Test float max
+    max = noArray.max(ofProperty: "floatCol") as! NSNumber
+    XCTAssertEqual(max.floatValue, Float(0), accuracy: 0.1, "Maximum should be 0.0f")
+    max = yesArray.max(ofProperty: "floatCol") as! NSNumber
+    XCTAssertEqual(max.floatValue, Float(1.2), accuracy: 0.1, "Maximum should be 1.2f")
 
-        // Test date max
-        var dateMaxOutput = noArray.max(ofProperty: "dateCol") as! Date
-        XCTAssertEqual(dateMaxOutput, dateMaxInput, "Maximum should be dateMaxInput")
-        dateMaxOutput = yesArray.max(ofProperty: "dateCol") as! Date
-        XCTAssertEqual(dateMaxOutput, dateMinInput, "Maximum should be dateMinInput")
+    // Test double max
+    max = noArray.max(ofProperty: "doubleCol") as! NSNumber
+    XCTAssertEqual(max.doubleValue, Double(2.5), accuracy: 0.1, "Maximum should be 2.5")
+    max = yesArray.max(ofProperty: "doubleCol") as! NSNumber
+    XCTAssertEqual(max.doubleValue, Double(0), accuracy: 0.1, "Maximum should be 0.0")
+
+    // Test date max
+    var dateMaxOutput = noArray.max(ofProperty: "dateCol") as! Date
+    XCTAssertEqual(dateMaxOutput, dateMaxInput, "Maximum should be dateMaxInput")
+    dateMaxOutput = yesArray.max(ofProperty: "dateCol") as! Date
+    XCTAssertEqual(dateMaxOutput, dateMinInput, "Maximum should be dateMinInput")
+  }
+
+  func testArrayDescription()
+  {
+    let realm = realmWithTestPath()
+
+    realm.beginWriteTransaction()
+
+    for _ in 0 ..< 1012
+    {
+      let person = SwiftRLMEmployeeObject()
+      person.name = "Mary"
+      person.age = 24
+      person.hired = true
+      realm.add(person)
     }
 
-    func testArrayDescription() {
-        let realm = realmWithTestPath()
+    try! realm.commitWriteTransaction()
 
-        realm.beginWriteTransaction()
+    let description = SwiftRLMEmployeeObject.allObjects(in: realm).description
 
-        for _ in 0..<1012 {
-            let person = SwiftRLMEmployeeObject()
-            person.name = "Mary"
-            person.age = 24
-            person.hired = true
-            realm.add(person)
-        }
+    XCTAssertTrue((description as NSString).range(of: "name").location != Foundation.NSNotFound, "property names should be displayed when calling \"description\" on RLMArray")
+    XCTAssertTrue((description as NSString).range(of: "Mary").location != Foundation.NSNotFound, "property values should be displayed when calling \"description\" on RLMArray")
 
-        try! realm.commitWriteTransaction()
+    XCTAssertTrue((description as NSString).range(of: "age").location != Foundation.NSNotFound, "property names should be displayed when calling \"description\" on RLMArray")
+    XCTAssertTrue((description as NSString).range(of: "24").location != Foundation.NSNotFound, "property values should be displayed when calling \"description\" on RLMArray")
 
-        let description = SwiftRLMEmployeeObject.allObjects(in: realm).description
+    XCTAssertTrue((description as NSString).range(of: "12 objects skipped").location != Foundation.NSNotFound, "'12 objects skipped' should be displayed when calling \"description\" on RLMArray")
+  }
 
-        XCTAssertTrue((description as NSString).range(of: "name").location != Foundation.NSNotFound, "property names should be displayed when calling \"description\" on RLMArray")
-        XCTAssertTrue((description as NSString).range(of: "Mary").location != Foundation.NSNotFound, "property values should be displayed when calling \"description\" on RLMArray")
+  func testDeleteLinksAndObjectsInArray()
+  {
+    let realm = realmWithTestPath()
 
-        XCTAssertTrue((description as NSString).range(of: "age").location != Foundation.NSNotFound, "property names should be displayed when calling \"description\" on RLMArray")
-        XCTAssertTrue((description as NSString).range(of: "24").location != Foundation.NSNotFound, "property values should be displayed when calling \"description\" on RLMArray")
+    realm.beginWriteTransaction()
 
-        XCTAssertTrue((description as NSString).range(of: "12 objects skipped").location != Foundation.NSNotFound, "'12 objects skipped' should be displayed when calling \"description\" on RLMArray")
+    let po1 = SwiftRLMEmployeeObject()
+    po1.age = 40
+    po1.name = "Joe"
+    po1.hired = true
+
+    let po2 = SwiftRLMEmployeeObject()
+    po2.age = 30
+    po2.name = "John"
+    po2.hired = false
+
+    let po3 = SwiftRLMEmployeeObject()
+    po3.age = 25
+    po3.name = "Jill"
+    po3.hired = true
+
+    realm.add(po1)
+    realm.add(po2)
+    realm.add(po3)
+
+    let company = SwiftRLMCompanyObject()
+    realm.add(company)
+    company.employees.addObjects(SwiftRLMEmployeeObject.allObjects(in: realm))
+
+    try! realm.commitWriteTransaction()
+
+    let peopleInCompany = company.employees
+    XCTAssertEqual(peopleInCompany.count, UInt(3), "No links should have been deleted")
+
+    realm.beginWriteTransaction()
+    peopleInCompany.removeObject(at: 1) // Should delete link to employee
+    try! realm.commitWriteTransaction()
+
+    XCTAssertEqual(peopleInCompany.count, UInt(2), "link deleted when accessing via links")
+
+    var test = peopleInCompany[0]
+    XCTAssertEqual(test.age, po1.age, "Should be equal")
+    XCTAssertEqual(test.name, po1.name, "Should be equal")
+    XCTAssertEqual(test.hired, po1.hired, "Should be equal")
+    // XCTAssertEqual(test, po1, "Should be equal") //FIXME, should work. Asana : https://app.asana.com/0/861870036984/13123030433568
+
+    test = peopleInCompany[1]
+    XCTAssertEqual(test.age, po3.age, "Should be equal")
+    XCTAssertEqual(test.name, po3.name, "Should be equal")
+    XCTAssertEqual(test.hired, po3.hired, "Should be equal")
+    // XCTAssertEqual(test, po3, "Should be equal") //FIXME, should work. Asana : https://app.asana.com/0/861870036984/13123030433568
+
+    realm.beginWriteTransaction()
+    peopleInCompany.removeLastObject()
+    XCTAssertEqual(peopleInCompany.count, UInt(1), "1 remaining link")
+    peopleInCompany.replaceObject(at: 0, with: po2)
+    XCTAssertEqual(peopleInCompany.count, UInt(1), "1 link replaced")
+    peopleInCompany.insert(po1, at: 0)
+    XCTAssertEqual(peopleInCompany.count, UInt(2), "2 links")
+    peopleInCompany.removeAllObjects()
+    XCTAssertEqual(peopleInCompany.count, UInt(0), "0 remaining links")
+    try! realm.commitWriteTransaction()
+  }
+
+  // Objective-C models
+
+  func testFastEnumeration_objc()
+  {
+    let realm = realmWithTestPath()
+
+    realm.beginWriteTransaction()
+
+    let dateMinInput = Date()
+    let dateMaxInput = dateMinInput.addingTimeInterval(1000)
+
+    _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = AggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = AggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = AggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = AggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+
+    try! realm.commitWriteTransaction()
+
+    let result = AggregateObject.objects(in: realm, where: "intCol < %d", 100)
+    XCTAssertEqual(result.count, UInt(10), "10 objects added")
+
+    var totalSum: CInt = 0
+
+    for obj in result
+    {
+      if let ao = obj as? AggregateObject
+      {
+        totalSum += ao.intCol
+      }
     }
 
-    func testDeleteLinksAndObjectsInArray() {
-        let realm = realmWithTestPath()
+    XCTAssertEqual(totalSum, CInt(100), "total sum should be 100")
+  }
 
-        realm.beginWriteTransaction()
+  func testObjectAggregate_objc()
+  {
+    let realm = realmWithTestPath()
 
-        let po1 = SwiftRLMEmployeeObject()
-        po1.age = 40
-        po1.name = "Joe"
-        po1.hired = true
+    realm.beginWriteTransaction()
 
-        let po2 = SwiftRLMEmployeeObject()
-        po2.age = 30
-        po2.name = "John"
-        po2.hired = false
+    let dateMinInput = Date()
+    let dateMaxInput = dateMinInput.addingTimeInterval(1000)
 
-        let po3 = SwiftRLMEmployeeObject()
-        po3.age = 25
-        po3.name = "Jill"
-        po3.hired = true
+    _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = AggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = AggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = AggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = AggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
+    _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
 
-        realm.add(po1)
-        realm.add(po2)
-        realm.add(po3)
+    try! realm.commitWriteTransaction()
 
-        let company = SwiftRLMCompanyObject()
-        realm.add(company)
-        company.employees.addObjects(SwiftRLMEmployeeObject.allObjects(in: realm))
+    let noArray = AggregateObject.objects(in: realm, where: "boolCol == NO")
+    let yesArray = AggregateObject.objects(in: realm, where: "boolCol == YES")
 
-        try! realm.commitWriteTransaction()
+    // SUM ::::::::::::::::::::::::::::::::::::::::::::::
+    // Test int sum
+    XCTAssertEqual(noArray.sum(ofProperty: "intCol").intValue, 4, "Sum should be 4")
+    XCTAssertEqual(yesArray.sum(ofProperty: "intCol").intValue, 0, "Sum should be 0")
 
-        let peopleInCompany = company.employees
-        XCTAssertEqual(peopleInCompany.count, UInt(3), "No links should have been deleted")
+    // Test float sum
+    XCTAssertEqual(noArray.sum(ofProperty: "floatCol").floatValue, Float(0), accuracy: 0.1, "Sum should be 0.0")
+    XCTAssertEqual(yesArray.sum(ofProperty: "floatCol").floatValue, Float(7.2), accuracy: 0.1, "Sum should be 7.2")
 
-        realm.beginWriteTransaction()
-        peopleInCompany.removeObject(at: 1) // Should delete link to employee
-        try! realm.commitWriteTransaction()
+    // Test double sum
+    XCTAssertEqual(noArray.sum(ofProperty: "doubleCol").doubleValue, Double(10), accuracy: 0.1, "Sum should be 10.0")
+    XCTAssertEqual(yesArray.sum(ofProperty: "doubleCol").doubleValue, Double(0), accuracy: 0.1, "Sum should be 0.0")
 
-        XCTAssertEqual(peopleInCompany.count, UInt(2), "link deleted when accessing via links")
+    // Average ::::::::::::::::::::::::::::::::::::::::::::::
+    // Test int average
+    XCTAssertEqual(noArray.average(ofProperty: "intCol")!.doubleValue, Double(1), accuracy: 0.1, "Average should be 1.0")
+    XCTAssertEqual(yesArray.average(ofProperty: "intCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
 
-        var test = peopleInCompany[0]
-        XCTAssertEqual(test.age, po1.age, "Should be equal")
-        XCTAssertEqual(test.name, po1.name, "Should be equal")
-        XCTAssertEqual(test.hired, po1.hired, "Should be equal")
-        // XCTAssertEqual(test, po1, "Should be equal") //FIXME, should work. Asana : https://app.asana.com/0/861870036984/13123030433568
+    // Test float average
+    XCTAssertEqual(noArray.average(ofProperty: "floatCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
+    XCTAssertEqual(yesArray.average(ofProperty: "floatCol")!.doubleValue, Double(1.2), accuracy: 0.1, "Average should be 1.2")
 
-        test = peopleInCompany[1]
-        XCTAssertEqual(test.age, po3.age, "Should be equal")
-        XCTAssertEqual(test.name, po3.name, "Should be equal")
-        XCTAssertEqual(test.hired, po3.hired, "Should be equal")
-        // XCTAssertEqual(test, po3, "Should be equal") //FIXME, should work. Asana : https://app.asana.com/0/861870036984/13123030433568
+    // Test double average
+    XCTAssertEqual(noArray.average(ofProperty: "doubleCol")!.doubleValue, Double(2.5), accuracy: 0.1, "Average should be 2.5")
+    XCTAssertEqual(yesArray.average(ofProperty: "doubleCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
 
-        realm.beginWriteTransaction()
-        peopleInCompany.removeLastObject()
-        XCTAssertEqual(peopleInCompany.count, UInt(1), "1 remaining link")
-        peopleInCompany.replaceObject(at: 0, with: po2)
-        XCTAssertEqual(peopleInCompany.count, UInt(1), "1 link replaced")
-        peopleInCompany.insert(po1, at: 0)
-        XCTAssertEqual(peopleInCompany.count, UInt(2), "2 links")
-        peopleInCompany.removeAllObjects()
-        XCTAssertEqual(peopleInCompany.count, UInt(0), "0 remaining links")
-        try! realm.commitWriteTransaction()
+    // MIN ::::::::::::::::::::::::::::::::::::::::::::::
+    // Test int min
+    var min = noArray.min(ofProperty: "intCol") as! NSNumber
+    XCTAssertEqual(min.int32Value, Int32(1), "Minimum should be 1")
+    min = yesArray.min(ofProperty: "intCol") as! NSNumber
+    XCTAssertEqual(min.int32Value, Int32(0), "Minimum should be 0")
+
+    // Test float min
+    min = noArray.min(ofProperty: "floatCol") as! NSNumber
+    XCTAssertEqual(min.floatValue, Float(0), accuracy: 0.1, "Minimum should be 0.0f")
+    min = yesArray.min(ofProperty: "floatCol") as! NSNumber
+    XCTAssertEqual(min.floatValue, Float(1.2), accuracy: 0.1, "Minimum should be 1.2f")
+
+    // Test double min
+    min = noArray.min(ofProperty: "doubleCol") as! NSNumber
+    XCTAssertEqual(min.doubleValue, Double(2.5), accuracy: 0.1, "Minimum should be 2.5")
+    min = yesArray.min(ofProperty: "doubleCol") as! NSNumber
+    XCTAssertEqual(min.doubleValue, Double(0), accuracy: 0.1, "Minimum should be 0.0")
+
+    // Test date min
+    var dateMinOutput = noArray.min(ofProperty: "dateCol") as! Date
+    XCTAssertEqual(dateMinOutput, dateMaxInput, "Minimum should be dateMaxInput")
+    dateMinOutput = yesArray.min(ofProperty: "dateCol") as! Date
+    XCTAssertEqual(dateMinOutput, dateMinInput, "Minimum should be dateMinInput")
+
+    // MAX ::::::::::::::::::::::::::::::::::::::::::::::
+    // Test int max
+    var max = noArray.max(ofProperty: "intCol") as! NSNumber
+    XCTAssertEqual(max.intValue, 1, "Maximum should be 1")
+    max = yesArray.max(ofProperty: "intCol") as! NSNumber
+    XCTAssertEqual(max.intValue, 0, "Maximum should be 0")
+
+    // Test float max
+    max = noArray.max(ofProperty: "floatCol") as! NSNumber
+    XCTAssertEqual(max.floatValue, Float(0), accuracy: 0.1, "Maximum should be 0.0f")
+    max = yesArray.max(ofProperty: "floatCol") as! NSNumber
+    XCTAssertEqual(max.floatValue, Float(1.2), accuracy: 0.1, "Maximum should be 1.2f")
+
+    // Test double max
+    max = noArray.max(ofProperty: "doubleCol") as! NSNumber
+    XCTAssertEqual(max.doubleValue, Double(2.5), accuracy: 0.1, "Maximum should be 2.5")
+    max = yesArray.max(ofProperty: "doubleCol") as! NSNumber
+    XCTAssertEqual(max.doubleValue, Double(0), accuracy: 0.1, "Maximum should be 0.0")
+
+    // Test date max
+    var dateMaxOutput = noArray.max(ofProperty: "dateCol") as! Date
+    XCTAssertEqual(dateMaxOutput, dateMaxInput, "Maximum should be dateMaxInput")
+    dateMaxOutput = yesArray.max(ofProperty: "dateCol") as! Date
+    XCTAssertEqual(dateMaxOutput, dateMinInput, "Maximum should be dateMinInput")
+  }
+
+  func testArrayDescription_objc()
+  {
+    let realm = realmWithTestPath()
+
+    realm.beginWriteTransaction()
+
+    for _ in 0 ..< 1012
+    {
+      let person = EmployeeObject()
+      person.name = "Mary"
+      person.age = 24
+      person.hired = true
+      realm.add(person)
     }
 
-    // Objective-C models
+    try! realm.commitWriteTransaction()
 
-    func testFastEnumeration_objc() {
-        let realm = realmWithTestPath()
+    let description = EmployeeObject.allObjects(in: realm).description
+    XCTAssertTrue((description as NSString).range(of: "name").location != Foundation.NSNotFound, "property names should be displayed when calling \"description\" on RLMArray")
+    XCTAssertTrue((description as NSString).range(of: "Mary").location != Foundation.NSNotFound, "property values should be displayed when calling \"description\" on RLMArray")
 
-        realm.beginWriteTransaction()
+    XCTAssertTrue((description as NSString).range(of: "age").location != Foundation.NSNotFound, "property names should be displayed when calling \"description\" on RLMArray")
+    XCTAssertTrue((description as NSString).range(of: "24").location != Foundation.NSNotFound, "property values should be displayed when calling \"description\" on RLMArray")
 
-        let dateMinInput = Date()
-        let dateMaxInput = dateMinInput.addingTimeInterval(1000)
+    XCTAssertTrue((description as NSString).range(of: "912 objects skipped").location != Foundation.NSNotFound, "'912 objects skipped' should be displayed when calling \"description\" on RLMArray")
+  }
 
-        _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = AggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = AggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = AggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = AggregateObject.create(in: realm, withValue: [10, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = AggregateObject.create(in: realm, withValue: [10, 1.2 as Float, 0 as Double, true, dateMinInput])
+  func makeEmployee(_ realm: RLMRealm, _ age: Int32, _ name: String, _ hired: Bool) -> EmployeeObject
+  {
+    let employee = EmployeeObject()
+    employee.age = age
+    employee.name = name
+    employee.hired = hired
+    realm.add(employee)
+    return employee
+  }
 
-        try! realm.commitWriteTransaction()
+  func testDeleteLinksAndObjectsInArray_objc()
+  {
+    let realm = realmWithTestPath()
 
-        let result = AggregateObject.objects(in: realm, where: "intCol < %d", 100)
-        XCTAssertEqual(result.count, UInt(10), "10 objects added")
+    realm.beginWriteTransaction()
 
-        var totalSum: CInt = 0
+    let po1 = makeEmployee(realm, 40, "Joe", true)
+    _ = makeEmployee(realm, 30, "John", false)
+    let po3 = makeEmployee(realm, 25, "Jill", true)
 
-        for obj in result {
-            if let ao = obj as? AggregateObject {
-                totalSum += ao.intCol
-            }
-        }
+    let company = CompanyObject()
+    company.name = "name"
+    realm.add(company)
+    company.employees.addObjects(EmployeeObject.allObjects(in: realm))
 
-        XCTAssertEqual(totalSum, CInt(100), "total sum should be 100")
-    }
+    try! realm.commitWriteTransaction()
 
-    func testObjectAggregate_objc() {
-        let realm = realmWithTestPath()
+    let peopleInCompany: RLMArray<EmployeeObject> = company.employees!
+    XCTAssertEqual(peopleInCompany.count, UInt(3), "No links should have been deleted")
 
-        realm.beginWriteTransaction()
+    realm.beginWriteTransaction()
+    peopleInCompany.removeObject(at: 1) // Should delete link to employee
+    try! realm.commitWriteTransaction()
 
-        let dateMinInput = Date()
-        let dateMaxInput = dateMinInput.addingTimeInterval(1000)
+    XCTAssertEqual(peopleInCompany.count, UInt(2), "link deleted when accessing via links")
 
-        _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = AggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = AggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = AggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = AggregateObject.create(in: realm, withValue: [1, 0 as Float, 2.5 as Double, false, dateMaxInput])
-        _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
-        _ = AggregateObject.create(in: realm, withValue: [0, 1.2 as Float, 0 as Double, true, dateMinInput])
+    var test = peopleInCompany[0]
+    XCTAssertEqual(test.age, po1.age, "Should be equal")
+    XCTAssertEqual(test.name!, po1.name!, "Should be equal")
+    XCTAssertEqual(test.hired, po1.hired, "Should be equal")
+    // XCTAssertEqual(test, po1, "Should be equal") //FIXME, should work. Asana : https://app.asana.com/0/861870036984/13123030433568
 
-        try! realm.commitWriteTransaction()
+    test = peopleInCompany[1]
+    XCTAssertEqual(test.age, po3.age, "Should be equal")
+    XCTAssertEqual(test.name!, po3.name!, "Should be equal")
+    XCTAssertEqual(test.hired, po3.hired, "Should be equal")
+    // XCTAssertEqual(test, po3, "Should be equal") //FIXME, should work. Asana : https://app.asana.com/0/861870036984/13123030433568
 
-        let noArray = AggregateObject.objects(in: realm, where: "boolCol == NO")
-        let yesArray = AggregateObject.objects(in: realm, where: "boolCol == YES")
+    let allPeople = EmployeeObject.allObjects(in: realm)
+    XCTAssertEqual(allPeople.count, UInt(3), "Only links should have been deleted, not the employees")
+  }
 
-        // SUM ::::::::::::::::::::::::::::::::::::::::::::::
-        // Test int sum
-        XCTAssertEqual(noArray.sum(ofProperty: "intCol").intValue, 4, "Sum should be 4")
-        XCTAssertEqual(yesArray.sum(ofProperty: "intCol").intValue, 0, "Sum should be 0")
+  func testIndexOfObject_objc()
+  {
+    let realm = realmWithTestPath()
 
-        // Test float sum
-        XCTAssertEqual(noArray.sum(ofProperty: "floatCol").floatValue, Float(0), accuracy: 0.1, "Sum should be 0.0")
-        XCTAssertEqual(yesArray.sum(ofProperty: "floatCol").floatValue, Float(7.2), accuracy: 0.1, "Sum should be 7.2")
+    realm.beginWriteTransaction()
+    let po1 = makeEmployee(realm, 40, "Joe", true)
+    let po2 = makeEmployee(realm, 30, "John", false)
+    let po3 = makeEmployee(realm, 25, "Jill", true)
+    try! realm.commitWriteTransaction()
 
-        // Test double sum
-        XCTAssertEqual(noArray.sum(ofProperty: "doubleCol").doubleValue, Double(10), accuracy: 0.1, "Sum should be 10.0")
-        XCTAssertEqual(yesArray.sum(ofProperty: "doubleCol").doubleValue, Double(0), accuracy: 0.1, "Sum should be 0.0")
+    let results = EmployeeObject.objects(in: realm, where: "hired = YES")
+    XCTAssertEqual(UInt(2), results.count)
+    XCTAssertEqual(UInt(0), results.index(of: po1))
+    XCTAssertEqual(UInt(1), results.index(of: po3))
+    XCTAssertEqual(NSNotFound, Int(results.index(of: po2)))
+  }
 
-        // Average ::::::::::::::::::::::::::::::::::::::::::::::
-        // Test int average
-        XCTAssertEqual(noArray.average(ofProperty: "intCol")!.doubleValue, Double(1), accuracy: 0.1, "Average should be 1.0")
-        XCTAssertEqual(yesArray.average(ofProperty: "intCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
+  func testIndexOfObjectWhere_objc()
+  {
+    let realm = realmWithTestPath()
 
-        // Test float average
-        XCTAssertEqual(noArray.average(ofProperty: "floatCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
-        XCTAssertEqual(yesArray.average(ofProperty: "floatCol")!.doubleValue, Double(1.2), accuracy: 0.1, "Average should be 1.2")
+    realm.beginWriteTransaction()
+    _ = makeEmployee(realm, 40, "Joe", true)
+    _ = makeEmployee(realm, 30, "John", false)
+    _ = makeEmployee(realm, 25, "Jill", true)
+    try! realm.commitWriteTransaction()
 
-        // Test double average
-        XCTAssertEqual(noArray.average(ofProperty: "doubleCol")!.doubleValue, Double(2.5), accuracy: 0.1, "Average should be 2.5")
-        XCTAssertEqual(yesArray.average(ofProperty: "doubleCol")!.doubleValue, Double(0), accuracy: 0.1, "Average should be 0.0")
+    let results = EmployeeObject.objects(in: realm, where: "hired = YES")
+    XCTAssertEqual(UInt(2), results.count)
+    XCTAssertEqual(UInt(0), results.indexOfObject(where: "age = %d", 40))
+    XCTAssertEqual(UInt(1), results.indexOfObject(where: "age = %d", 25))
+    XCTAssertEqual(NSNotFound, Int(results.indexOfObject(where: "age = %d", 30)))
+  }
 
-        // MIN ::::::::::::::::::::::::::::::::::::::::::::::
-        // Test int min
-        var min = noArray.min(ofProperty: "intCol") as! NSNumber
-        XCTAssertEqual(min.int32Value, Int32(1), "Minimum should be 1")
-        min = yesArray.min(ofProperty: "intCol") as! NSNumber
-        XCTAssertEqual(min.int32Value, Int32(0), "Minimum should be 0")
+  func testSortingExistingQuery_objc()
+  {
+    let realm = realmWithTestPath()
 
-        // Test float min
-        min = noArray.min(ofProperty: "floatCol") as! NSNumber
-        XCTAssertEqual(min.floatValue, Float(0), accuracy: 0.1, "Minimum should be 0.0f")
-        min = yesArray.min(ofProperty: "floatCol") as! NSNumber
-        XCTAssertEqual(min.floatValue, Float(1.2), accuracy: 0.1, "Minimum should be 1.2f")
+    realm.beginWriteTransaction()
+    _ = makeEmployee(realm, 20, "A", true)
+    _ = makeEmployee(realm, 30, "B", false)
+    _ = makeEmployee(realm, 40, "C", true)
+    try! realm.commitWriteTransaction()
 
-        // Test double min
-        min = noArray.min(ofProperty: "doubleCol") as! NSNumber
-        XCTAssertEqual(min.doubleValue, Double(2.5), accuracy: 0.1, "Minimum should be 2.5")
-        min = yesArray.min(ofProperty: "doubleCol") as! NSNumber
-        XCTAssertEqual(min.doubleValue, Double(0), accuracy: 0.1, "Minimum should be 0.0")
+    let sortedByAge = EmployeeObject.allObjects(in: realm).sortedResults(usingKeyPath: "age", ascending: true)
+    let sortedByName = sortedByAge.sortedResults(usingKeyPath: "name", ascending: false)
 
-        // Test date min
-        var dateMinOutput = noArray.min(ofProperty: "dateCol") as! Date
-        XCTAssertEqual(dateMinOutput, dateMaxInput, "Minimum should be dateMaxInput")
-        dateMinOutput = yesArray.min(ofProperty: "dateCol") as! Date
-        XCTAssertEqual(dateMinOutput, dateMinInput, "Minimum should be dateMinInput")
-
-        // MAX ::::::::::::::::::::::::::::::::::::::::::::::
-        // Test int max
-        var max = noArray.max(ofProperty: "intCol") as! NSNumber
-        XCTAssertEqual(max.intValue, 1, "Maximum should be 1")
-        max = yesArray.max(ofProperty: "intCol") as! NSNumber
-        XCTAssertEqual(max.intValue, 0, "Maximum should be 0")
-
-        // Test float max
-        max = noArray.max(ofProperty: "floatCol") as! NSNumber
-        XCTAssertEqual(max.floatValue, Float(0), accuracy: 0.1, "Maximum should be 0.0f")
-        max = yesArray.max(ofProperty: "floatCol") as! NSNumber
-        XCTAssertEqual(max.floatValue, Float(1.2), accuracy: 0.1, "Maximum should be 1.2f")
-
-        // Test double max
-        max = noArray.max(ofProperty: "doubleCol") as! NSNumber
-        XCTAssertEqual(max.doubleValue, Double(2.5), accuracy: 0.1, "Maximum should be 2.5")
-        max = yesArray.max(ofProperty: "doubleCol") as! NSNumber
-        XCTAssertEqual(max.doubleValue, Double(0), accuracy: 0.1, "Maximum should be 0.0")
-
-        // Test date max
-        var dateMaxOutput = noArray.max(ofProperty: "dateCol") as! Date
-        XCTAssertEqual(dateMaxOutput, dateMaxInput, "Maximum should be dateMaxInput")
-        dateMaxOutput = yesArray.max(ofProperty: "dateCol") as! Date
-        XCTAssertEqual(dateMaxOutput, dateMinInput, "Maximum should be dateMinInput")
-    }
-
-    func testArrayDescription_objc() {
-        let realm = realmWithTestPath()
-
-        realm.beginWriteTransaction()
-
-        for _ in 0..<1012 {
-            let person = EmployeeObject()
-            person.name = "Mary"
-            person.age = 24
-            person.hired = true
-            realm.add(person)
-        }
-
-        try! realm.commitWriteTransaction()
-
-        let description = EmployeeObject.allObjects(in: realm).description
-        XCTAssertTrue((description as NSString).range(of: "name").location != Foundation.NSNotFound, "property names should be displayed when calling \"description\" on RLMArray")
-        XCTAssertTrue((description as NSString).range(of: "Mary").location != Foundation.NSNotFound, "property values should be displayed when calling \"description\" on RLMArray")
-
-        XCTAssertTrue((description as NSString).range(of: "age").location != Foundation.NSNotFound, "property names should be displayed when calling \"description\" on RLMArray")
-        XCTAssertTrue((description as NSString).range(of: "24").location != Foundation.NSNotFound, "property values should be displayed when calling \"description\" on RLMArray")
-
-        XCTAssertTrue((description as NSString).range(of: "912 objects skipped").location != Foundation.NSNotFound, "'912 objects skipped' should be displayed when calling \"description\" on RLMArray")
-    }
-
-    func makeEmployee(_ realm: RLMRealm, _ age: Int32, _ name: String, _ hired: Bool) -> EmployeeObject {
-        let employee = EmployeeObject()
-        employee.age = age
-        employee.name = name
-        employee.hired = hired
-        realm.add(employee)
-        return employee
-    }
-
-    func testDeleteLinksAndObjectsInArray_objc() {
-        let realm = realmWithTestPath()
-
-        realm.beginWriteTransaction()
-
-        let po1 = makeEmployee(realm, 40, "Joe", true)
-        _ = makeEmployee(realm, 30, "John", false)
-        let po3 = makeEmployee(realm, 25, "Jill", true)
-
-        let company = CompanyObject()
-        company.name = "name"
-        realm.add(company)
-        company.employees.addObjects(EmployeeObject.allObjects(in: realm))
-
-        try! realm.commitWriteTransaction()
-
-        let peopleInCompany: RLMArray<EmployeeObject> = company.employees!
-        XCTAssertEqual(peopleInCompany.count, UInt(3), "No links should have been deleted")
-
-        realm.beginWriteTransaction()
-        peopleInCompany.removeObject(at: 1) // Should delete link to employee
-        try! realm.commitWriteTransaction()
-
-        XCTAssertEqual(peopleInCompany.count, UInt(2), "link deleted when accessing via links")
-
-        var test = peopleInCompany[0]
-        XCTAssertEqual(test.age, po1.age, "Should be equal")
-        XCTAssertEqual(test.name!, po1.name!, "Should be equal")
-        XCTAssertEqual(test.hired, po1.hired, "Should be equal")
-        // XCTAssertEqual(test, po1, "Should be equal") //FIXME, should work. Asana : https://app.asana.com/0/861870036984/13123030433568
-
-        test = peopleInCompany[1]
-        XCTAssertEqual(test.age, po3.age, "Should be equal")
-        XCTAssertEqual(test.name!, po3.name!, "Should be equal")
-        XCTAssertEqual(test.hired, po3.hired, "Should be equal")
-        // XCTAssertEqual(test, po3, "Should be equal") //FIXME, should work. Asana : https://app.asana.com/0/861870036984/13123030433568
-
-        let allPeople = EmployeeObject.allObjects(in: realm)
-        XCTAssertEqual(allPeople.count, UInt(3), "Only links should have been deleted, not the employees")
-    }
-
-    func testIndexOfObject_objc() {
-        let realm = realmWithTestPath()
-
-        realm.beginWriteTransaction()
-        let po1 = makeEmployee(realm, 40, "Joe", true)
-        let po2 = makeEmployee(realm, 30, "John", false)
-        let po3 = makeEmployee(realm, 25, "Jill", true)
-        try! realm.commitWriteTransaction()
-
-        let results = EmployeeObject.objects(in: realm, where: "hired = YES")
-        XCTAssertEqual(UInt(2), results.count)
-        XCTAssertEqual(UInt(0), results.index(of: po1));
-        XCTAssertEqual(UInt(1), results.index(of: po3));
-        XCTAssertEqual(NSNotFound, Int(results.index(of: po2)));
-    }
-
-    func testIndexOfObjectWhere_objc() {
-        let realm = realmWithTestPath()
-
-        realm.beginWriteTransaction()
-        _ = makeEmployee(realm, 40, "Joe", true)
-        _ = makeEmployee(realm, 30, "John", false)
-        _ = makeEmployee(realm, 25, "Jill", true)
-        try! realm.commitWriteTransaction()
-
-        let results = EmployeeObject.objects(in: realm, where: "hired = YES")
-        XCTAssertEqual(UInt(2), results.count)
-        XCTAssertEqual(UInt(0), results.indexOfObject(where: "age = %d", 40))
-        XCTAssertEqual(UInt(1), results.indexOfObject(where: "age = %d", 25))
-        XCTAssertEqual(NSNotFound, Int(results.indexOfObject(where: "age = %d", 30)))
-    }
-
-    func testSortingExistingQuery_objc() {
-        let realm = realmWithTestPath()
-
-        realm.beginWriteTransaction()
-        _ = makeEmployee(realm, 20, "A", true)
-        _ = makeEmployee(realm, 30, "B", false)
-        _ = makeEmployee(realm, 40, "C", true)
-        try! realm.commitWriteTransaction()
-
-        let sortedByAge = EmployeeObject.allObjects(in: realm).sortedResults(usingKeyPath: "age", ascending: true)
-        let sortedByName = sortedByAge.sortedResults(usingKeyPath: "name", ascending: false)
-
-        XCTAssertEqual(Int32(20), (sortedByAge[0] as! EmployeeObject).age)
-        XCTAssertEqual(Int32(40), (sortedByName[0] as! EmployeeObject).age)
-    }
+    XCTAssertEqual(Int32(20), (sortedByAge[0] as! EmployeeObject).age)
+    XCTAssertEqual(Int32(40), (sortedByName[0] as! EmployeeObject).age)
+  }
 }

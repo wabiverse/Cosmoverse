@@ -1,20 +1,32 @@
-////////////////////////////////////////////////////////////////////////////
-//
-// Copyright 2023 Realm Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////
+/* ----------------------------------------------------------------
+ * :: :  M  E  T  A  V  E  R  S  E  :                            ::
+ * ----------------------------------------------------------------
+ * This software is Licensed under the terms of the Apache License,
+ * version 2.0 (the "Apache License") with the following additional
+ * modification; you may not use this file except within compliance
+ * of the Apache License and the following modification made to it.
+ * Section 6. Trademarks. is deleted and replaced with:
+ *
+ * Trademarks. This License does not grant permission to use any of
+ * its trade names, trademarks, service marks, or the product names
+ * of this Licensor or its affiliates, except as required to comply
+ * with Section 4(c.) of this License, and to reproduce the content
+ * of the NOTICE file.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND without even an
+ * implied warranty of MERCHANTABILITY, or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Apache License for more details.
+ *
+ * You should have received a copy for this software license of the
+ * Apache License along with this program; or, if not, please write
+ * to the Free Software Foundation Inc., with the following address
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *         Copyright (C) 2024 Wabi Foundation. All Rights Reserved.
+ * ----------------------------------------------------------------
+ *  . x x x . o o o . x x x . : : : .    o  x  o    . : : : .
+ * ---------------------------------------------------------------- */
 
 import CoreLocation
 import Realm
@@ -24,7 +36,7 @@ import Realm
 
   * Latitude ranges between -90 and 90 degrees, inclusive.
   * Longitude ranges between -180 and 180 degrees, inclusive.
- 
+
  Values outside this ranges will return nil when trying to create a `GeoPoint`.
 
  - note: There is no dedicated type to store Geospatial points, instead points should be stored as
@@ -68,18 +80,22 @@ public typealias GeoPoint = RLMGeospatialPoint
  */
 public typealias GeoBox = RLMGeospatialBox
 
-public extension GeoBox {
-    /// Initialize a `GeoBox`, with values for bottom left corner and top right corner.
-    ///
-    /// - Parameter bottomLeft: The bottom left corner of the rectangle.
-    /// - Parameter topRight: The top right corner of the rectangle.
-    convenience init?(bottomLeft: (Double, Double), topRight: (Double, Double)) {
-        guard let bottomLeftPoint = GeoPoint(latitude: bottomLeft.0, longitude: bottomLeft.1),
-              let topRightPoint = GeoPoint(latitude: topRight.0, longitude: topRight.1) else {
-            return nil
-        }
-        self.init(bottomLeft: bottomLeftPoint, topRight: topRightPoint)
+public extension GeoBox
+{
+  /// Initialize a `GeoBox`, with values for bottom left corner and top right corner.
+  ///
+  /// - Parameter bottomLeft: The bottom left corner of the rectangle.
+  /// - Parameter topRight: The top right corner of the rectangle.
+  convenience init?(bottomLeft: (Double, Double), topRight: (Double, Double))
+  {
+    guard let bottomLeftPoint = GeoPoint(latitude: bottomLeft.0, longitude: bottomLeft.1),
+          let topRightPoint = GeoPoint(latitude: topRight.0, longitude: topRight.1)
+    else
+    {
+      return nil
     }
+    self.init(bottomLeft: bottomLeftPoint, topRight: topRightPoint)
+  }
 }
 
 /**
@@ -91,7 +107,7 @@ public extension GeoBox {
  A `Polygon` describes a shape conformed by at least three segments, where the last and the first `GeoPoint`
  must be the same to indicate a closed polygon (meaning you need at least 4 points to define a polygon).
  Inner holes in a `GeoPolygon` must  be entirely inside the outer ring
- 
+
  A `hole` has the following restrictions:
  - Holes may not cross, i.e. the boundary of a hole may not intersect both the interior and the exterior of any other
    hole.
@@ -106,34 +122,39 @@ public extension GeoBox {
  */
 public typealias GeoPolygon = RLMGeospatialPolygon
 
-public extension GeoPolygon {
-    /// Initialize a `GeoPolygon`, with values for bottom left corner and top right corner.
-    ///
-    /// Returns `nil` if the `GeoPoints` representing a polygon (outer ring or holes), don't have at least 4 points.
-    /// Returns `nil` if the first and the last `GeoPoint` in a polygon are not the same.
-    ///
-    /// - Parameter outerRing: The polygon's external (outer) ring.
-    /// - Parameter holes: The holes (if any) in the polygon.
-    convenience init?(outerRing: [(Double, Double)], holes: [[(Double, Double)]] = []) {
-        let outerRingPoints = outerRing.compactMap(GeoPoint.init)
-        let holesPoints = holes.map { $0.compactMap(GeoPoint.init) }
-        guard outerRing.count == outerRingPoints.count,
-              zip(holes, holesPoints).allSatisfy({ $0.count == $1.count }) else {
-            return nil
-        }
-        self.init(outerRing: outerRingPoints, holes: holesPoints)
+public extension GeoPolygon
+{
+  /// Initialize a `GeoPolygon`, with values for bottom left corner and top right corner.
+  ///
+  /// Returns `nil` if the `GeoPoints` representing a polygon (outer ring or holes), don't have at least 4 points.
+  /// Returns `nil` if the first and the last `GeoPoint` in a polygon are not the same.
+  ///
+  /// - Parameter outerRing: The polygon's external (outer) ring.
+  /// - Parameter holes: The holes (if any) in the polygon.
+  convenience init?(outerRing: [(Double, Double)], holes: [[(Double, Double)]] = [])
+  {
+    let outerRingPoints = outerRing.compactMap(GeoPoint.init)
+    let holesPoints = holes.map { $0.compactMap(GeoPoint.init) }
+    guard outerRing.count == outerRingPoints.count,
+          zip(holes, holesPoints).allSatisfy({ $0.count == $1.count })
+    else
+    {
+      return nil
     }
+    self.init(outerRing: outerRingPoints, holes: holesPoints)
+  }
 
-    /// Initialize a `GeoPolygon`, with values for bottom left corner and top right corner.
-    ///
-    /// Returns `nil` if the `GeoPoints` representing a polygon (outer ring or holes), don't have at least 4 points.
-    /// Returns `nil` if the first and the last `GeoPoint` in a polygon are not the same.
-    ///
-    /// - Parameter outerRing: The polygon's external (outer) ring.
-    /// - Parameter holes: The holes (if any) in the polygon.
-    convenience init?(outerRing: [(Double, Double)], holes: [(Double, Double)]...) {
-        self.init(outerRing: outerRing, holes: holes.map { $0 })
-    }
+  /// Initialize a `GeoPolygon`, with values for bottom left corner and top right corner.
+  ///
+  /// Returns `nil` if the `GeoPoints` representing a polygon (outer ring or holes), don't have at least 4 points.
+  /// Returns `nil` if the first and the last `GeoPoint` in a polygon are not the same.
+  ///
+  /// - Parameter outerRing: The polygon's external (outer) ring.
+  /// - Parameter holes: The holes (if any) in the polygon.
+  convenience init?(outerRing: [(Double, Double)], holes: [(Double, Double)]...)
+  {
+    self.init(outerRing: outerRing, holes: holes.map { $0 })
+  }
 }
 
 /**
@@ -151,26 +172,33 @@ public typealias Distance = RLMDistance
  */
 public typealias GeoCircle = RLMGeospatialCircle
 
-public extension GeoCircle {
-    /// Initialize a `GeoCircle`, from its center and radius in radians.
-    ///
-    /// - Parameter center: Center of the circle.
-    /// - Parameter radiusInRadians: The radius of the circle in radians.
-    convenience init?(center: (Double, Double), radiusInRadians: Double) {
-        guard let centerPoint = GeoPoint(latitude: center.0, longitude: center.1) else {
-            return nil
-        }
-        self.init(center: centerPoint, radiusInRadians: radiusInRadians)
+public extension GeoCircle
+{
+  /// Initialize a `GeoCircle`, from its center and radius in radians.
+  ///
+  /// - Parameter center: Center of the circle.
+  /// - Parameter radiusInRadians: The radius of the circle in radians.
+  convenience init?(center: (Double, Double), radiusInRadians: Double)
+  {
+    guard let centerPoint = GeoPoint(latitude: center.0, longitude: center.1)
+    else
+    {
+      return nil
     }
+    self.init(center: centerPoint, radiusInRadians: radiusInRadians)
+  }
 
-    /// Initialize a `GeoCircle`, from its center and radius.
-    ///
-    /// - Parameter center: Center of the circle.
-    /// - Parameter radius: Radius of the circle.
-    convenience init?(center: (Double, Double), radius: Distance) {
-        guard let centerPoint = GeoPoint(latitude: center.0, longitude: center.1) else {
-            return nil
-        }
-        self.init(center: centerPoint, radius: radius)
+  /// Initialize a `GeoCircle`, from its center and radius.
+  ///
+  /// - Parameter center: Center of the circle.
+  /// - Parameter radius: Radius of the circle.
+  convenience init?(center: (Double, Double), radius: Distance)
+  {
+    guard let centerPoint = GeoPoint(latitude: center.0, longitude: center.1)
+    else
+    {
+      return nil
     }
+    self.init(center: centerPoint, radius: radius)
+  }
 }

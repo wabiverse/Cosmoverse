@@ -1,20 +1,32 @@
-////////////////////////////////////////////////////////////////////////////
-//
-// Copyright 2016 Realm Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////
+/* ----------------------------------------------------------------
+ * :: :  M  E  T  A  V  E  R  S  E  :                            ::
+ * ----------------------------------------------------------------
+ * This software is Licensed under the terms of the Apache License,
+ * version 2.0 (the "Apache License") with the following additional
+ * modification; you may not use this file except within compliance
+ * of the Apache License and the following modification made to it.
+ * Section 6. Trademarks. is deleted and replaced with:
+ *
+ * Trademarks. This License does not grant permission to use any of
+ * its trade names, trademarks, service marks, or the product names
+ * of this Licensor or its affiliates, except as required to comply
+ * with Section 4(c.) of this License, and to reproduce the content
+ * of the NOTICE file.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND without even an
+ * implied warranty of MERCHANTABILITY, or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Apache License for more details.
+ *
+ * You should have received a copy for this software license of the
+ * Apache License along with this program; or, if not, please write
+ * to the Free Software Foundation Inc., with the following address
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *         Copyright (C) 2024 Wabi Foundation. All Rights Reserved.
+ * ----------------------------------------------------------------
+ *  . x x x . o o o . x x x . : : : .    o  x  o    . : : : .
+ * ---------------------------------------------------------------- */
 
 import Realm
 
@@ -29,47 +41,48 @@ import Realm
  Note that only types defined by Realm can meaningfully conform to this protocol, and defining new
  classes which attempt to conform to it will not make them work with `ThreadSafeReference`.
  */
-public protocol ThreadConfined {
-    /**
-     The Realm which manages the object, or `nil` if the object is unmanaged.
+public protocol ThreadConfined
+{
+  /**
+   The Realm which manages the object, or `nil` if the object is unmanaged.
 
-     Unmanaged objects are not confined to a thread and cannot be passed to methods expecting a
-     `ThreadConfined` object.
-     */
-    var realm: Realm? { get }
+   Unmanaged objects are not confined to a thread and cannot be passed to methods expecting a
+   `ThreadConfined` object.
+   */
+  var realm: Realm? { get }
 
-    /// Indicates if the object can no longer be accessed because it is now invalid.
-    var isInvalidated: Bool { get }
+  /// Indicates if the object can no longer be accessed because it is now invalid.
+  var isInvalidated: Bool { get }
 
-    /**
-    Indicates if the object is frozen.
+  /**
+   Indicates if the object is frozen.
 
-    Frozen objects are not confined to their source thread. Forming a `ThreadSafeReference` to a
-    frozen object is allowed, but is unlikely to be useful.
-    */
-    var isFrozen: Bool { get }
+   Frozen objects are not confined to their source thread. Forming a `ThreadSafeReference` to a
+   frozen object is allowed, but is unlikely to be useful.
+   */
+  var isFrozen: Bool { get }
 
-    /**
-     Returns a frozen snapshot of this object.
+  /**
+    Returns a frozen snapshot of this object.
 
-     Unlike normal Realm live objects, the frozen copy can be read from any thread, and the values
-     read will never update to reflect new writes to the Realm. Frozen collections can be queried
-     like any other Realm collection. Frozen objects cannot be mutated, and cannot be observed for
-     change notifications.
+    Unlike normal Realm live objects, the frozen copy can be read from any thread, and the values
+    read will never update to reflect new writes to the Realm. Frozen collections can be queried
+    like any other Realm collection. Frozen objects cannot be mutated, and cannot be observed for
+    change notifications.
 
-     Unmanaged Realm objects cannot be frozen.
+    Unmanaged Realm objects cannot be frozen.
 
-     - warning: Holding onto a frozen object for an extended period while performing write
-     transaction on the Realm may result in the Realm file growing to large sizes. See
-     `Realm.Configuration.maximumNumberOfActiveVersions` for more information.
-    */
-    func freeze() -> Self
+    - warning: Holding onto a frozen object for an extended period while performing write
+    transaction on the Realm may result in the Realm file growing to large sizes. See
+    `Realm.Configuration.maximumNumberOfActiveVersions` for more information.
+   */
+  func freeze() -> Self
 
-    /**
-     Returns a live (mutable) reference of this object.
-     Will return self if called on an already live object.
-     */
-    func thaw() -> Self?
+  /**
+   Returns a live (mutable) reference of this object.
+   Will return self if called on an already live object.
+   */
+  func thaw() -> Self?
 }
 
 /**
@@ -89,31 +102,34 @@ public protocol ThreadConfined {
  - see: `ThreadConfined`
  - see: `Realm.resolve(_:)`
  */
-@frozen public struct ThreadSafeReference<Confined: ThreadConfined> {
-    /**
-     Indicates if the reference can no longer be resolved because an attempt to resolve it has
-     already occurred. References can only be resolved once.
-     */
-    public var isInvalidated: Bool { return objectiveCReference.isInvalidated }
+@frozen public struct ThreadSafeReference<Confined: ThreadConfined>
+{
+  /**
+   Indicates if the reference can no longer be resolved because an attempt to resolve it has
+   already occurred. References can only be resolved once.
+   */
+  public var isInvalidated: Bool { objectiveCReference.isInvalidated }
 
-    private let objectiveCReference: RLMThreadSafeReference<RLMThreadConfined>
+  private let objectiveCReference: RLMThreadSafeReference<RLMThreadConfined>
 
-    /**
-     Create a thread-safe reference to the thread-confined object.
+  /**
+   Create a thread-safe reference to the thread-confined object.
 
-     - parameter threadConfined: The thread-confined object to create a thread-safe reference to.
+   - parameter threadConfined: The thread-confined object to create a thread-safe reference to.
 
-     - note: You may continue to use and access the thread-confined object after passing it to this
-             constructor.
-     */
-    public init(to threadConfined: Confined) {
-        objectiveCReference = RLMThreadSafeReference(threadConfined: (threadConfined as! _ObjcBridgeable)._rlmObjcValue as! RLMThreadConfined)
-    }
+   - note: You may continue to use and access the thread-confined object after passing it to this
+           constructor.
+   */
+  public init(to threadConfined: Confined)
+  {
+    objectiveCReference = RLMThreadSafeReference(threadConfined: (threadConfined as! _ObjcBridgeable)._rlmObjcValue as! RLMThreadConfined)
+  }
 
-    internal func resolve(in realm: Realm) -> Confined? {
-        guard let resolved = realm.rlmRealm.__resolve(objectiveCReference) as? RLMThreadConfined else { return nil }
-        return (Confined.self as! _ObjcBridgeable.Type)._rlmFromObjc(resolved).flatMap { $0 as? Confined }
-    }
+  func resolve(in realm: Realm) -> Confined?
+  {
+    guard let resolved = realm.rlmRealm.__resolve(objectiveCReference) as? RLMThreadConfined else { return nil }
+    return (Confined.self as! _ObjcBridgeable.Type)._rlmFromObjc(resolved).flatMap { $0 as? Confined }
+  }
 }
 
 // MARK: ThreadSafe propertyWrapper
@@ -133,92 +149,112 @@ public protocol ThreadConfined {
 
  - see: `ThreadSafeReference`
  - see: `ThreadConfined`
-*/
-@propertyWrapper public final class ThreadSafe<T: ThreadConfined> {
-    private var threadSafeReference: ThreadSafeReference<T>?
-    private var rlmConfiguration: RLMRealmConfiguration?
-    private let lock = NSLock()
+ */
+@propertyWrapper public final class ThreadSafe<T: ThreadConfined>
+{
+  private var threadSafeReference: ThreadSafeReference<T>?
+  private var rlmConfiguration: RLMRealmConfiguration?
+  private let lock = NSLock()
 
-    /// :nodoc:
-    public var wrappedValue: T? {
-        get {
-            lock.lock()
-            guard let threadSafeReference = threadSafeReference,
-                  let rlmConfig = rlmConfiguration else {
-                lock.unlock()
-                return nil
-            }
-            do {
-                let rlmRealm = try RLMRealm(configuration: rlmConfig)
-                let realm = Realm(rlmRealm)
-                guard let value = threadSafeReference.resolve(in: realm) else {
-                    self.threadSafeReference = nil
-                    lock.unlock()
-                    return nil
-                }
-                self.threadSafeReference = ThreadSafeReference(to: value)
-                lock.unlock()
-                return value
-            // FIXME: wrappedValue should throw
-            // As of Swift 5.5 property wrappers can't have throwing accessors.
-            } catch let error as NSError {
-                lock.unlock()
-                throwRealmException(error.localizedDescription)
-            }
+  /// :nodoc:
+  public var wrappedValue: T?
+  {
+    get
+    {
+      lock.lock()
+      guard let threadSafeReference,
+            let rlmConfig = rlmConfiguration
+      else
+      {
+        lock.unlock()
+        return nil
+      }
+      do
+      {
+        let rlmRealm = try RLMRealm(configuration: rlmConfig)
+        let realm = Realm(rlmRealm)
+        guard let value = threadSafeReference.resolve(in: realm)
+        else
+        {
+          self.threadSafeReference = nil
+          lock.unlock()
+          return nil
         }
-        set {
-            lock.lock()
-            guard let newValue = newValue else {
-                threadSafeReference = nil
-                lock.unlock()
-                return
-            }
-            guard let rlmConfiguration = newValue.realm?.rlmRealm.configuration else {
-                lock.unlock()
-                throwRealmException("Only managed objects may be wrapped as thread safe.")
-            }
-            self.rlmConfiguration = rlmConfiguration
-            threadSafeReference = ThreadSafeReference(to: newValue)
-            lock.unlock()
-        }
+        self.threadSafeReference = ThreadSafeReference(to: value)
+        lock.unlock()
+        return value
+        // FIXME: wrappedValue should throw
+        // As of Swift 5.5 property wrappers can't have throwing accessors.
+      }
+      catch let error as NSError
+      {
+        lock.unlock()
+        throwRealmException(error.localizedDescription)
+      }
     }
-
-    /// :nodoc:
-    public init(wrappedValue: T?) {
-        self.wrappedValue = wrappedValue
+    set
+    {
+      lock.lock()
+      guard let newValue
+      else
+      {
+        threadSafeReference = nil
+        lock.unlock()
+        return
+      }
+      guard let rlmConfiguration = newValue.realm?.rlmRealm.configuration
+      else
+      {
+        lock.unlock()
+        throwRealmException("Only managed objects may be wrapped as thread safe.")
+      }
+      self.rlmConfiguration = rlmConfiguration
+      threadSafeReference = ThreadSafeReference(to: newValue)
+      lock.unlock()
     }
+  }
+
+  /// :nodoc:
+  public init(wrappedValue: T?)
+  {
+    self.wrappedValue = wrappedValue
+  }
 }
 
-extension Realm {
-    // MARK: Thread Safe Reference
+public extension Realm
+{
+  // MARK: Thread Safe Reference
 
-    /**
-     Returns the same object as the one referenced when the `ThreadSafeReference` was first
-     created, but resolved for the current Realm for this thread. Returns `nil` if this object was
-     deleted after the reference was created.
+  /**
+   Returns the same object as the one referenced when the `ThreadSafeReference` was first
+   created, but resolved for the current Realm for this thread. Returns `nil` if this object was
+   deleted after the reference was created.
 
-     - parameter reference: The thread-safe reference to the thread-confined object to resolve in
-                            this Realm.
+   - parameter reference: The thread-safe reference to the thread-confined object to resolve in
+                          this Realm.
 
-     - warning: A `ThreadSafeReference` object must be resolved at most once.
-                Failing to resolve a `ThreadSafeReference` will result in the source version of the
-                Realm being pinned until the reference is deallocated.
-                An exception will be thrown if a reference is resolved more than once.
+   - warning: A `ThreadSafeReference` object must be resolved at most once.
+              Failing to resolve a `ThreadSafeReference` will result in the source version of the
+              Realm being pinned until the reference is deallocated.
+              An exception will be thrown if a reference is resolved more than once.
 
-     - warning: Cannot call within a write transaction.
+   - warning: Cannot call within a write transaction.
 
-     - note: Will refresh this Realm if the source Realm was at a later version than this one.
+   - note: Will refresh this Realm if the source Realm was at a later version than this one.
 
-     - see: `ThreadSafeReference(to:)`
-     */
-    public func resolve<Confined>(_ reference: ThreadSafeReference<Confined>) -> Confined? {
-        return reference.resolve(in: self)
-    }
+   - see: `ThreadSafeReference(to:)`
+   */
+  func resolve<Confined>(_ reference: ThreadSafeReference<Confined>) -> Confined?
+  {
+    reference.resolve(in: self)
+  }
 }
 
-extension ThreadSafeReference: Sendable {
-}
-extension RLMThreadSafeReference: @unchecked Sendable {
-}
-extension ThreadSafe: @unchecked Sendable {
-}
+extension ThreadSafeReference: Sendable
+{}
+
+extension RLMThreadSafeReference: @unchecked Sendable
+{}
+
+extension ThreadSafe: @unchecked Sendable
+{}

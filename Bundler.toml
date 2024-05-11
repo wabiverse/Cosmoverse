@@ -1,0 +1,10 @@
+format_version = 2
+
+[apps.Cosmoverse]
+identifier = 'foundation.wabi.Cosmoverse'
+product = 'Cosmoverse'
+version = '1.0.0'
+category = 'public.app-category.graphics-design'
+
+[apps.Cosmoverse.plist]
+commit = '$(COMMIT_HASH)'

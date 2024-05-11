@@ -1,643 +1,713 @@
-////////////////////////////////////////////////////////////////////////////
-//
-// Copyright 2021 Realm Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////
+/* ----------------------------------------------------------------
+ * :: :  M  E  T  A  V  E  R  S  E  :                            ::
+ * ----------------------------------------------------------------
+ * This software is Licensed under the terms of the Apache License,
+ * version 2.0 (the "Apache License") with the following additional
+ * modification; you may not use this file except within compliance
+ * of the Apache License and the following modification made to it.
+ * Section 6. Trademarks. is deleted and replaced with:
+ *
+ * Trademarks. This License does not grant permission to use any of
+ * its trade names, trademarks, service marks, or the product names
+ * of this Licensor or its affiliates, except as required to comply
+ * with Section 4(c.) of this License, and to reproduce the content
+ * of the NOTICE file.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND without even an
+ * implied warranty of MERCHANTABILITY, or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Apache License for more details.
+ *
+ * You should have received a copy for this software license of the
+ * Apache License along with this program; or, if not, please write
+ * to the Free Software Foundation Inc., with the following address
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *         Copyright (C) 2024 Wabi Foundation. All Rights Reserved.
+ * ----------------------------------------------------------------
+ *  . x x x . o o o . x x x . : : : .    o  x  o    . : : : .
+ * ---------------------------------------------------------------- */
 
 import Foundation
-import RealmSwift
 import Realm
+import RealmSwift
 
-class ModernAllTypesObject: Object {
-    @Persisted(primaryKey: true) var pk: ObjectId
-    var ignored: Int = 1
+class ModernAllTypesObject: Object
+{
+  @Persisted(primaryKey: true) var pk: ObjectId
+  var ignored: Int = 1
 
-    @Persisted var boolCol: Bool
-    @Persisted var intCol: Int
-    @Persisted var int8Col: Int8 = 1
-    @Persisted var int16Col: Int16 = 2
-    @Persisted var int32Col: Int32 = 3
-    @Persisted var int64Col: Int64 = 4
-    @Persisted var floatCol: Float = 5
-    @Persisted var doubleCol: Double = 6
-    @Persisted var stringCol: String
-    @Persisted var binaryCol: Data
-    @Persisted var dateCol: Date
-    @Persisted var decimalCol: Decimal128
-    @Persisted var objectIdCol: ObjectId
-    @Persisted var objectCol: ModernAllTypesObject?
-    @Persisted var arrayCol: List<ModernAllTypesObject>
-    @Persisted var setCol: MutableSet<ModernAllTypesObject>
-    @Persisted var mapCol: Map<String, ModernAllTypesObject?>
-    @Persisted var anyCol: AnyRealmValue
-    @Persisted var uuidCol: UUID
-    @Persisted var intEnumCol: ModernIntEnum
-    @Persisted var stringEnumCol: ModernStringEnum
+  @Persisted var boolCol: Bool
+  @Persisted var intCol: Int
+  @Persisted var int8Col: Int8 = 1
+  @Persisted var int16Col: Int16 = 2
+  @Persisted var int32Col: Int32 = 3
+  @Persisted var int64Col: Int64 = 4
+  @Persisted var floatCol: Float = 5
+  @Persisted var doubleCol: Double = 6
+  @Persisted var stringCol: String
+  @Persisted var binaryCol: Data
+  @Persisted var dateCol: Date
+  @Persisted var decimalCol: Decimal128
+  @Persisted var objectIdCol: ObjectId
+  @Persisted var objectCol: ModernAllTypesObject?
+  @Persisted var arrayCol: List<ModernAllTypesObject>
+  @Persisted var setCol: MutableSet<ModernAllTypesObject>
+  @Persisted var mapCol: Map<String, ModernAllTypesObject?>
+  @Persisted var anyCol: AnyRealmValue
+  @Persisted var uuidCol: UUID
+  @Persisted var intEnumCol: ModernIntEnum
+  @Persisted var stringEnumCol: ModernStringEnum
 
-    @Persisted var optIntCol: Int?
-    @Persisted var optInt8Col: Int8?
-    @Persisted var optInt16Col: Int16?
-    @Persisted var optInt32Col: Int32?
-    @Persisted var optInt64Col: Int64?
-    @Persisted var optFloatCol: Float?
-    @Persisted var optDoubleCol: Double?
-    @Persisted var optBoolCol: Bool?
-    @Persisted var optStringCol: String?
-    @Persisted var optBinaryCol: Data?
-    @Persisted var optDateCol: Date?
-    @Persisted var optDecimalCol: Decimal128?
-    @Persisted var optObjectIdCol: ObjectId?
-    @Persisted var optUuidCol: UUID?
-    @Persisted var optIntEnumCol: ModernIntEnum?
-    @Persisted var optStringEnumCol: ModernStringEnum?
+  @Persisted var optIntCol: Int?
+  @Persisted var optInt8Col: Int8?
+  @Persisted var optInt16Col: Int16?
+  @Persisted var optInt32Col: Int32?
+  @Persisted var optInt64Col: Int64?
+  @Persisted var optFloatCol: Float?
+  @Persisted var optDoubleCol: Double?
+  @Persisted var optBoolCol: Bool?
+  @Persisted var optStringCol: String?
+  @Persisted var optBinaryCol: Data?
+  @Persisted var optDateCol: Date?
+  @Persisted var optDecimalCol: Decimal128?
+  @Persisted var optObjectIdCol: ObjectId?
+  @Persisted var optUuidCol: UUID?
+  @Persisted var optIntEnumCol: ModernIntEnum?
+  @Persisted var optStringEnumCol: ModernStringEnum?
 
-    @Persisted var arrayBool: List<Bool>
-    @Persisted var arrayInt: List<Int>
-    @Persisted var arrayInt8: List<Int8>
-    @Persisted var arrayInt16: List<Int16>
-    @Persisted var arrayInt32: List<Int32>
-    @Persisted var arrayInt64: List<Int64>
-    @Persisted var arrayFloat: List<Float>
-    @Persisted var arrayDouble: List<Double>
-    @Persisted var arrayString: List<String>
-    @Persisted var arrayBinary: List<Data>
-    @Persisted var arrayDate: List<Date>
-    @Persisted var arrayDecimal: List<Decimal128>
-    @Persisted var arrayObjectId: List<ObjectId>
-    @Persisted var arrayAny: List<AnyRealmValue>
-    @Persisted var arrayUuid: List<UUID>
+  @Persisted var arrayBool: List<Bool>
+  @Persisted var arrayInt: List<Int>
+  @Persisted var arrayInt8: List<Int8>
+  @Persisted var arrayInt16: List<Int16>
+  @Persisted var arrayInt32: List<Int32>
+  @Persisted var arrayInt64: List<Int64>
+  @Persisted var arrayFloat: List<Float>
+  @Persisted var arrayDouble: List<Double>
+  @Persisted var arrayString: List<String>
+  @Persisted var arrayBinary: List<Data>
+  @Persisted var arrayDate: List<Date>
+  @Persisted var arrayDecimal: List<Decimal128>
+  @Persisted var arrayObjectId: List<ObjectId>
+  @Persisted var arrayAny: List<AnyRealmValue>
+  @Persisted var arrayUuid: List<UUID>
 
-    @Persisted var arrayOptBool: List<Bool?>
-    @Persisted var arrayOptInt: List<Int?>
-    @Persisted var arrayOptInt8: List<Int8?>
-    @Persisted var arrayOptInt16: List<Int16?>
-    @Persisted var arrayOptInt32: List<Int32?>
-    @Persisted var arrayOptInt64: List<Int64?>
-    @Persisted var arrayOptFloat: List<Float?>
-    @Persisted var arrayOptDouble: List<Double?>
-    @Persisted var arrayOptString: List<String?>
-    @Persisted var arrayOptBinary: List<Data?>
-    @Persisted var arrayOptDate: List<Date?>
-    @Persisted var arrayOptDecimal: List<Decimal128?>
-    @Persisted var arrayOptObjectId: List<ObjectId?>
-    @Persisted var arrayOptUuid: List<UUID?>
+  @Persisted var arrayOptBool: List<Bool?>
+  @Persisted var arrayOptInt: List<Int?>
+  @Persisted var arrayOptInt8: List<Int8?>
+  @Persisted var arrayOptInt16: List<Int16?>
+  @Persisted var arrayOptInt32: List<Int32?>
+  @Persisted var arrayOptInt64: List<Int64?>
+  @Persisted var arrayOptFloat: List<Float?>
+  @Persisted var arrayOptDouble: List<Double?>
+  @Persisted var arrayOptString: List<String?>
+  @Persisted var arrayOptBinary: List<Data?>
+  @Persisted var arrayOptDate: List<Date?>
+  @Persisted var arrayOptDecimal: List<Decimal128?>
+  @Persisted var arrayOptObjectId: List<ObjectId?>
+  @Persisted var arrayOptUuid: List<UUID?>
 
-    @Persisted var setBool: MutableSet<Bool>
-    @Persisted var setInt: MutableSet<Int>
-    @Persisted var setInt8: MutableSet<Int8>
-    @Persisted var setInt16: MutableSet<Int16>
-    @Persisted var setInt32: MutableSet<Int32>
-    @Persisted var setInt64: MutableSet<Int64>
-    @Persisted var setFloat: MutableSet<Float>
-    @Persisted var setDouble: MutableSet<Double>
-    @Persisted var setString: MutableSet<String>
-    @Persisted var setBinary: MutableSet<Data>
-    @Persisted var setDate: MutableSet<Date>
-    @Persisted var setDecimal: MutableSet<Decimal128>
-    @Persisted var setObjectId: MutableSet<ObjectId>
-    @Persisted var setAny: MutableSet<AnyRealmValue>
-    @Persisted var setUuid: MutableSet<UUID>
+  @Persisted var setBool: MutableSet<Bool>
+  @Persisted var setInt: MutableSet<Int>
+  @Persisted var setInt8: MutableSet<Int8>
+  @Persisted var setInt16: MutableSet<Int16>
+  @Persisted var setInt32: MutableSet<Int32>
+  @Persisted var setInt64: MutableSet<Int64>
+  @Persisted var setFloat: MutableSet<Float>
+  @Persisted var setDouble: MutableSet<Double>
+  @Persisted var setString: MutableSet<String>
+  @Persisted var setBinary: MutableSet<Data>
+  @Persisted var setDate: MutableSet<Date>
+  @Persisted var setDecimal: MutableSet<Decimal128>
+  @Persisted var setObjectId: MutableSet<ObjectId>
+  @Persisted var setAny: MutableSet<AnyRealmValue>
+  @Persisted var setUuid: MutableSet<UUID>
 
-    @Persisted var setOptBool: MutableSet<Bool?>
-    @Persisted var setOptInt: MutableSet<Int?>
-    @Persisted var setOptInt8: MutableSet<Int8?>
-    @Persisted var setOptInt16: MutableSet<Int16?>
-    @Persisted var setOptInt32: MutableSet<Int32?>
-    @Persisted var setOptInt64: MutableSet<Int64?>
-    @Persisted var setOptFloat: MutableSet<Float?>
-    @Persisted var setOptDouble: MutableSet<Double?>
-    @Persisted var setOptString: MutableSet<String?>
-    @Persisted var setOptBinary: MutableSet<Data?>
-    @Persisted var setOptDate: MutableSet<Date?>
-    @Persisted var setOptDecimal: MutableSet<Decimal128?>
-    @Persisted var setOptObjectId: MutableSet<ObjectId?>
-    @Persisted var setOptUuid: MutableSet<UUID?>
+  @Persisted var setOptBool: MutableSet<Bool?>
+  @Persisted var setOptInt: MutableSet<Int?>
+  @Persisted var setOptInt8: MutableSet<Int8?>
+  @Persisted var setOptInt16: MutableSet<Int16?>
+  @Persisted var setOptInt32: MutableSet<Int32?>
+  @Persisted var setOptInt64: MutableSet<Int64?>
+  @Persisted var setOptFloat: MutableSet<Float?>
+  @Persisted var setOptDouble: MutableSet<Double?>
+  @Persisted var setOptString: MutableSet<String?>
+  @Persisted var setOptBinary: MutableSet<Data?>
+  @Persisted var setOptDate: MutableSet<Date?>
+  @Persisted var setOptDecimal: MutableSet<Decimal128?>
+  @Persisted var setOptObjectId: MutableSet<ObjectId?>
+  @Persisted var setOptUuid: MutableSet<UUID?>
 
-    @Persisted var mapBool: Map<String, Bool>
-    @Persisted var mapInt: Map<String, Int>
-    @Persisted var mapInt8: Map<String, Int8>
-    @Persisted var mapInt16: Map<String, Int16>
-    @Persisted var mapInt32: Map<String, Int32>
-    @Persisted var mapInt64: Map<String, Int64>
-    @Persisted var mapFloat: Map<String, Float>
-    @Persisted var mapDouble: Map<String, Double>
-    @Persisted var mapString: Map<String, String>
-    @Persisted var mapBinary: Map<String, Data>
-    @Persisted var mapDate: Map<String, Date>
-    @Persisted var mapDecimal: Map<String, Decimal128>
-    @Persisted var mapObjectId: Map<String, ObjectId>
-    @Persisted var mapAny: Map<String, AnyRealmValue>
-    @Persisted var mapUuid: Map<String, UUID>
+  @Persisted var mapBool: Map<String, Bool>
+  @Persisted var mapInt: Map<String, Int>
+  @Persisted var mapInt8: Map<String, Int8>
+  @Persisted var mapInt16: Map<String, Int16>
+  @Persisted var mapInt32: Map<String, Int32>
+  @Persisted var mapInt64: Map<String, Int64>
+  @Persisted var mapFloat: Map<String, Float>
+  @Persisted var mapDouble: Map<String, Double>
+  @Persisted var mapString: Map<String, String>
+  @Persisted var mapBinary: Map<String, Data>
+  @Persisted var mapDate: Map<String, Date>
+  @Persisted var mapDecimal: Map<String, Decimal128>
+  @Persisted var mapObjectId: Map<String, ObjectId>
+  @Persisted var mapAny: Map<String, AnyRealmValue>
+  @Persisted var mapUuid: Map<String, UUID>
 
-    @Persisted var mapOptBool: Map<String, Bool?>
-    @Persisted var mapOptInt: Map<String, Int?>
-    @Persisted var mapOptInt8: Map<String, Int8?>
-    @Persisted var mapOptInt16: Map<String, Int16?>
-    @Persisted var mapOptInt32: Map<String, Int32?>
-    @Persisted var mapOptInt64: Map<String, Int64?>
-    @Persisted var mapOptFloat: Map<String, Float?>
-    @Persisted var mapOptDouble: Map<String, Double?>
-    @Persisted var mapOptString: Map<String, String?>
-    @Persisted var mapOptBinary: Map<String, Data?>
-    @Persisted var mapOptDate: Map<String, Date?>
-    @Persisted var mapOptDecimal: Map<String, Decimal128?>
-    @Persisted var mapOptObjectId: Map<String, ObjectId?>
-    @Persisted var mapOptUuid: Map<String, UUID?>
+  @Persisted var mapOptBool: Map<String, Bool?>
+  @Persisted var mapOptInt: Map<String, Int?>
+  @Persisted var mapOptInt8: Map<String, Int8?>
+  @Persisted var mapOptInt16: Map<String, Int16?>
+  @Persisted var mapOptInt32: Map<String, Int32?>
+  @Persisted var mapOptInt64: Map<String, Int64?>
+  @Persisted var mapOptFloat: Map<String, Float?>
+  @Persisted var mapOptDouble: Map<String, Double?>
+  @Persisted var mapOptString: Map<String, String?>
+  @Persisted var mapOptBinary: Map<String, Data?>
+  @Persisted var mapOptDate: Map<String, Date?>
+  @Persisted var mapOptDecimal: Map<String, Decimal128?>
+  @Persisted var mapOptObjectId: Map<String, ObjectId?>
+  @Persisted var mapOptUuid: Map<String, UUID?>
 
-    @Persisted(originProperty: "objectCol")
-    var linkingObjects: LinkingObjects<ModernAllTypesObject>
+  @Persisted(originProperty: "objectCol")
+  var linkingObjects: LinkingObjects<ModernAllTypesObject>
 }
 
-class LinkToModernAllTypesObject: Object {
-    @Persisted var object: ModernAllTypesObject?
-    @Persisted var list: List<ModernAllTypesObject>
-    @Persisted var set: MutableSet<ModernAllTypesObject>
-    @Persisted var map: Map<String, ModernAllTypesObject?>
+class LinkToModernAllTypesObject: Object
+{
+  @Persisted var object: ModernAllTypesObject?
+  @Persisted var list: List<ModernAllTypesObject>
+  @Persisted var set: MutableSet<ModernAllTypesObject>
+  @Persisted var map: Map<String, ModernAllTypesObject?>
 }
 
-enum ModernIntEnum: Int, Codable, PersistableEnum {
-    case value1 = 1
-    case value2 = 3
-    case value3 = 5
-}
-enum ModernStringEnum: String, Codable, PersistableEnum {
-    case value1 = "a"
-    case value2 = "c"
-    case value3 = "e"
+enum ModernIntEnum: Int, Codable, PersistableEnum
+{
+  case value1 = 1
+  case value2 = 3
+  case value3 = 5
 }
 
-class ModernImplicitlyUnwrappedOptionalObject: Object {
-    @Persisted var optStringCol: String!
-    @Persisted var optBinaryCol: Data!
-    @Persisted var optDateCol: Date!
-    @Persisted var optDecimalCol: Decimal128!
-    @Persisted var optObjectIdCol: ObjectId!
-    @Persisted var optObjectCol: ModernImplicitlyUnwrappedOptionalObject!
-    @Persisted var optUuidCol: UUID!
+enum ModernStringEnum: String, Codable, PersistableEnum
+{
+  case value1 = "a"
+  case value2 = "c"
+  case value3 = "e"
 }
 
-class ModernLinkToPrimaryStringObject: Object {
-    @Persisted var pk = ""
-    @Persisted var object: ModernPrimaryStringObject?
-    @Persisted var objects: List<ModernPrimaryStringObject>
-
-    override class func primaryKey() -> String? {
-        return "pk"
-    }
+class ModernImplicitlyUnwrappedOptionalObject: Object
+{
+  @Persisted var optStringCol: String!
+  @Persisted var optBinaryCol: Data!
+  @Persisted var optDateCol: Date!
+  @Persisted var optDecimalCol: Decimal128!
+  @Persisted var optObjectIdCol: ObjectId!
+  @Persisted var optObjectCol: ModernImplicitlyUnwrappedOptionalObject!
+  @Persisted var optUuidCol: UUID!
 }
 
-class ModernUTF8Object: Object {
-    // swiftlint:disable:next identifier_name
-    @Persisted var 柱колоéнǢкƱаم👍 = "值значен™👍☞⎠‱௹♣︎☐▼❒∑⨌⧭иеمرحبا"
+class ModernLinkToPrimaryStringObject: Object
+{
+  @Persisted var pk = ""
+  @Persisted var object: ModernPrimaryStringObject?
+  @Persisted var objects: List<ModernPrimaryStringObject>
+
+  override class func primaryKey() -> String?
+  {
+    "pk"
+  }
 }
 
-protocol ModernPrimaryKeyObject: Object {
-    associatedtype PrimaryKey: Equatable
-    var pk: PrimaryKey { get set }
+class ModernUTF8Object: Object
+{
+  // swiftlint:disable:next identifier_name
+  @Persisted var 柱колоéнǢкƱаم👍 = "值значен™👍☞⎠‱௹♣︎☐▼❒∑⨌⧭иеمرحبا"
 }
 
-class ModernPrimaryStringObject: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: String
+protocol ModernPrimaryKeyObject: Object
+{
+  associatedtype PrimaryKey: Equatable
+  var pk: PrimaryKey { get set }
 }
 
-class ModernPrimaryOptionalStringObject: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: String?
+class ModernPrimaryStringObject: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: String
 }
 
-class ModernPrimaryIntObject: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: Int
+class ModernPrimaryOptionalStringObject: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: String?
 }
 
-class ModernPrimaryOptionalIntObject: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: Int?
+class ModernPrimaryIntObject: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: Int
 }
 
-class ModernPrimaryInt8Object: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: Int8
+class ModernPrimaryOptionalIntObject: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: Int?
 }
 
-class ModernPrimaryOptionalInt8Object: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: Int8?
+class ModernPrimaryInt8Object: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: Int8
 }
 
-class ModernPrimaryInt16Object: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: Int16
+class ModernPrimaryOptionalInt8Object: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: Int8?
 }
 
-class ModernPrimaryOptionalInt16Object: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: Int16?
+class ModernPrimaryInt16Object: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: Int16
 }
 
-class ModernPrimaryInt32Object: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: Int32
+class ModernPrimaryOptionalInt16Object: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: Int16?
 }
 
-class ModernPrimaryOptionalInt32Object: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: Int32?
+class ModernPrimaryInt32Object: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: Int32
 }
 
-class ModernPrimaryInt64Object: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: Int64
+class ModernPrimaryOptionalInt32Object: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: Int32?
 }
 
-class ModernPrimaryOptionalInt64Object: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: Int64?
+class ModernPrimaryInt64Object: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: Int64
 }
 
-class ModernPrimaryUUIDObject: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: UUID
+class ModernPrimaryOptionalInt64Object: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: Int64?
 }
 
-class ModernPrimaryOptionalUUIDObject: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: UUID?
+class ModernPrimaryUUIDObject: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: UUID
 }
 
-class ModernPrimaryObjectIdObject: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: ObjectId
+class ModernPrimaryOptionalUUIDObject: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: UUID?
 }
 
-class ModernPrimaryOptionalObjectIdObject: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: ObjectId?
+class ModernPrimaryObjectIdObject: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: ObjectId
 }
 
-class ModernPrimaryIntEnumObject: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: ModernIntEnum
+class ModernPrimaryOptionalObjectIdObject: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: ObjectId?
 }
 
-class ModernPrimaryOptionalIntEnumObject: Object, ModernPrimaryKeyObject {
-    @Persisted(primaryKey: true) var pk: ModernIntEnum?
+class ModernPrimaryIntEnumObject: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: ModernIntEnum
 }
 
-class ModernIndexedIntEnumObject: Object {
-    @Persisted(indexed: true) var value: ModernIntEnum
+class ModernPrimaryOptionalIntEnumObject: Object, ModernPrimaryKeyObject
+{
+  @Persisted(primaryKey: true) var pk: ModernIntEnum?
 }
 
-class ModernIndexedOptionalIntEnumObject: Object {
-    @Persisted(indexed: true) var value: ModernIntEnum?
+class ModernIndexedIntEnumObject: Object
+{
+  @Persisted(indexed: true) var value: ModernIntEnum
 }
 
-class ModernCustomInitializerObject: Object {
-    @Persisted var stringCol: String
-
-    init(stringVal: String) {
-        stringCol = stringVal
-        super.init()
-    }
-
-    required override init() {
-        stringCol = ""
-        super.init()
-    }
+class ModernIndexedOptionalIntEnumObject: Object
+{
+  @Persisted(indexed: true) var value: ModernIntEnum?
 }
 
-class ModernConvenienceInitializerObject: Object {
-    @Persisted var stringCol = ""
+class ModernCustomInitializerObject: Object
+{
+  @Persisted var stringCol: String
 
-    convenience init(stringCol: String) {
-        self.init()
-        self.stringCol = stringCol
-    }
+  init(stringVal: String)
+  {
+    stringCol = stringVal
+    super.init()
+  }
+
+  override required init()
+  {
+    stringCol = ""
+    super.init()
+  }
+}
+
+class ModernConvenienceInitializerObject: Object
+{
+  @Persisted var stringCol = ""
+
+  convenience init(stringCol: String)
+  {
+    self.init()
+    self.stringCol = stringCol
+  }
 }
 
 @objc(ModernObjcRenamedObject)
-class ModernObjcRenamedObject: Object {
-    @Persisted var stringCol = ""
+class ModernObjcRenamedObject: Object
+{
+  @Persisted var stringCol = ""
 }
 
 @objc(ModernObjcRenamedObjectWithTotallyDifferentName)
-class ModernObjcArbitrarilyRenamedObject: Object {
-    @Persisted var boolCol = false
+class ModernObjcArbitrarilyRenamedObject: Object
+{
+  @Persisted var boolCol = false
 }
 
-class ModernIntAndStringObject: Object {
-    @Persisted var intCol: Int
-    @Persisted var optIntCol: Int?
-    @Persisted var stringCol: String
-    @Persisted var optStringCol: String?
+class ModernIntAndStringObject: Object
+{
+  @Persisted var intCol: Int
+  @Persisted var optIntCol: Int?
+  @Persisted var stringCol: String
+  @Persisted var optStringCol: String?
 }
 
-class ModernCollectionObject: Object {
-    @Persisted var list: List<ModernAllTypesObject>
-    @Persisted var set: MutableSet<ModernAllTypesObject>
-    @Persisted var map: Map<String, ModernAllTypesObject?>
+class ModernCollectionObject: Object
+{
+  @Persisted var list: List<ModernAllTypesObject>
+  @Persisted var set: MutableSet<ModernAllTypesObject>
+  @Persisted var map: Map<String, ModernAllTypesObject?>
 }
 
-class ModernCircleObject: Object {
-    @Persisted var obj: ModernCircleObject?
-    @Persisted var array: List<ModernCircleObject>
+class ModernCircleObject: Object
+{
+  @Persisted var obj: ModernCircleObject?
+  @Persisted var array: List<ModernCircleObject>
 }
 
-class ModernEmbeddedParentObject: Object {
-    @Persisted var object: ModernEmbeddedTreeObject1?
-    @Persisted var array: List<ModernEmbeddedTreeObject1>
+class ModernEmbeddedParentObject: Object
+{
+  @Persisted var object: ModernEmbeddedTreeObject1?
+  @Persisted var array: List<ModernEmbeddedTreeObject1>
 }
 
-class ModernEmbeddedPrimaryParentObject: Object {
-    @Persisted(primaryKey: true) var pk: Int = 0
-    @Persisted var object: ModernEmbeddedTreeObject1?
-    @Persisted var array: List<ModernEmbeddedTreeObject1>
+class ModernEmbeddedPrimaryParentObject: Object
+{
+  @Persisted(primaryKey: true) var pk: Int = 0
+  @Persisted var object: ModernEmbeddedTreeObject1?
+  @Persisted var array: List<ModernEmbeddedTreeObject1>
 }
 
-protocol ModernEmbeddedTreeObject: EmbeddedObject {
-    var value: Int { get set }
+protocol ModernEmbeddedTreeObject: EmbeddedObject
+{
+  var value: Int { get set }
 }
 
-class ModernEmbeddedTreeObject1: EmbeddedObject, ModernEmbeddedTreeObject {
-    @Persisted var value = 0
-    @Persisted var bool = false
-    @Persisted var child: ModernEmbeddedTreeObject2?
-    @Persisted var children: List<ModernEmbeddedTreeObject2>
+class ModernEmbeddedTreeObject1: EmbeddedObject, ModernEmbeddedTreeObject
+{
+  @Persisted var value = 0
+  @Persisted var bool = false
+  @Persisted var child: ModernEmbeddedTreeObject2?
+  @Persisted var children: List<ModernEmbeddedTreeObject2>
 
-    @Persisted(originProperty: "object")
-    var parent1: LinkingObjects<ModernEmbeddedParentObject>
-    @Persisted(originProperty: "array")
-    var parent2: LinkingObjects<ModernEmbeddedParentObject>
+  @Persisted(originProperty: "object")
+  var parent1: LinkingObjects<ModernEmbeddedParentObject>
+  @Persisted(originProperty: "array")
+  var parent2: LinkingObjects<ModernEmbeddedParentObject>
 }
 
-class ModernEmbeddedTreeObject2: EmbeddedObject, ModernEmbeddedTreeObject {
-    @Persisted var value = 0
-    @Persisted var child: ModernEmbeddedTreeObject3?
-    @Persisted var children: List<ModernEmbeddedTreeObject3>
+class ModernEmbeddedTreeObject2: EmbeddedObject, ModernEmbeddedTreeObject
+{
+  @Persisted var value = 0
+  @Persisted var child: ModernEmbeddedTreeObject3?
+  @Persisted var children: List<ModernEmbeddedTreeObject3>
 
-    @Persisted(originProperty: "child")
-    var parent3: LinkingObjects<ModernEmbeddedTreeObject1>
-    @Persisted(originProperty: "children")
-    var parent4: LinkingObjects<ModernEmbeddedTreeObject1>
+  @Persisted(originProperty: "child")
+  var parent3: LinkingObjects<ModernEmbeddedTreeObject1>
+  @Persisted(originProperty: "children")
+  var parent4: LinkingObjects<ModernEmbeddedTreeObject1>
 }
 
-class ModernEmbeddedTreeObject3: EmbeddedObject, ModernEmbeddedTreeObject {
-    @Persisted var value = 0
+class ModernEmbeddedTreeObject3: EmbeddedObject, ModernEmbeddedTreeObject
+{
+  @Persisted var value = 0
 
-    @Persisted(originProperty: "child")
-    var parent3: LinkingObjects<ModernEmbeddedTreeObject2>
-    @Persisted(originProperty: "children")
-    var parent4: LinkingObjects<ModernEmbeddedTreeObject2>
+  @Persisted(originProperty: "child")
+  var parent3: LinkingObjects<ModernEmbeddedTreeObject2>
+  @Persisted(originProperty: "children")
+  var parent4: LinkingObjects<ModernEmbeddedTreeObject2>
 }
 
-class ModernEmbeddedObject: EmbeddedObject {
-    @Persisted var value = 0
+class ModernEmbeddedObject: EmbeddedObject
+{
+  @Persisted var value = 0
 }
 
-class SetterObservers: Object {
-    @Persisted var value: Int {
-        willSet {
-            willSetCallback?()
-        }
-        didSet {
-            didSetCallback?()
-        }
+class SetterObservers: Object
+{
+  @Persisted var value: Int
+  {
+    willSet
+    {
+      willSetCallback?()
     }
+    didSet
+    {
+      didSetCallback?()
+    }
+  }
 
-    var willSetCallback: (() -> Void)?
-    var didSetCallback: (() -> Void)?
+  var willSetCallback: (() -> Void)?
+  var didSetCallback: (() -> Void)?
 }
 
-class ObjectWithArcMethodCategoryNames: Object {
-    // @objc properties with these names would crash with asan (and unreliably
-    // without it) because they would not have the correct behavior for the
-    // inferred ARC method family.
-    @Persisted var newValue: String
-    @Persisted var allocValue: String
-    @Persisted var copyValue: String
-    @Persisted var mutableCopyValue: String
-    @Persisted var initValue: String
+class ObjectWithArcMethodCategoryNames: Object
+{
+  /// @objc properties with these names would crash with asan (and unreliably
+  /// without it) because they would not have the correct behavior for the
+  /// inferred ARC method family.
+  @Persisted var newValue: String
+  @Persisted var allocValue: String
+  @Persisted var copyValue: String
+  @Persisted var mutableCopyValue: String
+  @Persisted var initValue: String
 }
 
-class ModernAllIndexableTypesObject: Object {
-    @Persisted(indexed: true) var boolCol: Bool
-    @Persisted(indexed: true) var intCol: Int
-    @Persisted(indexed: true) var int8Col: Int8 = 1
-    @Persisted(indexed: true) var int16Col: Int16 = 2
-    @Persisted(indexed: true) var int32Col: Int32 = 3
-    @Persisted(indexed: true) var int64Col: Int64 = 4
-    @Persisted(indexed: true) var stringCol: String
-    @Persisted(indexed: true) var dateCol: Date
-    @Persisted(indexed: true) var uuidCol: UUID
-    @Persisted(indexed: true) var objectIdCol: ObjectId
-    @Persisted(indexed: true) var intEnumCol: ModernIntEnum
-    @Persisted(indexed: true) var stringEnumCol: ModernStringEnum
+class ModernAllIndexableTypesObject: Object
+{
+  @Persisted(indexed: true) var boolCol: Bool
+  @Persisted(indexed: true) var intCol: Int
+  @Persisted(indexed: true) var int8Col: Int8 = 1
+  @Persisted(indexed: true) var int16Col: Int16 = 2
+  @Persisted(indexed: true) var int32Col: Int32 = 3
+  @Persisted(indexed: true) var int64Col: Int64 = 4
+  @Persisted(indexed: true) var stringCol: String
+  @Persisted(indexed: true) var dateCol: Date
+  @Persisted(indexed: true) var uuidCol: UUID
+  @Persisted(indexed: true) var objectIdCol: ObjectId
+  @Persisted(indexed: true) var intEnumCol: ModernIntEnum
+  @Persisted(indexed: true) var stringEnumCol: ModernStringEnum
 
-    @Persisted(indexed: true) var optIntCol: Int?
-    @Persisted(indexed: true) var optInt8Col: Int8?
-    @Persisted(indexed: true) var optInt16Col: Int16?
-    @Persisted(indexed: true) var optInt32Col: Int32?
-    @Persisted(indexed: true) var optInt64Col: Int64?
-    @Persisted(indexed: true) var optBoolCol: Bool?
-    @Persisted(indexed: true) var optStringCol: String?
-    @Persisted(indexed: true) var optDateCol: Date?
-    @Persisted(indexed: true) var optUuidCol: UUID?
-    @Persisted(indexed: true) var optObjectIdCol: ObjectId?
-    @Persisted(indexed: true) var optIntEnumCol: ModernIntEnum?
-    @Persisted(indexed: true) var optStringEnumCol: ModernStringEnum?
+  @Persisted(indexed: true) var optIntCol: Int?
+  @Persisted(indexed: true) var optInt8Col: Int8?
+  @Persisted(indexed: true) var optInt16Col: Int16?
+  @Persisted(indexed: true) var optInt32Col: Int32?
+  @Persisted(indexed: true) var optInt64Col: Int64?
+  @Persisted(indexed: true) var optBoolCol: Bool?
+  @Persisted(indexed: true) var optStringCol: String?
+  @Persisted(indexed: true) var optDateCol: Date?
+  @Persisted(indexed: true) var optUuidCol: UUID?
+  @Persisted(indexed: true) var optObjectIdCol: ObjectId?
+  @Persisted(indexed: true) var optIntEnumCol: ModernIntEnum?
+  @Persisted(indexed: true) var optStringEnumCol: ModernStringEnum?
 }
 
-class ModernAllIndexableButNotIndexedObject: Object {
-    @Persisted(indexed: false) var boolCol: Bool
-    @Persisted(indexed: false) var intCol: Int
-    @Persisted(indexed: false) var int8Col: Int8 = 1
-    @Persisted(indexed: false) var int16Col: Int16 = 2
-    @Persisted(indexed: false) var int32Col: Int32 = 3
-    @Persisted(indexed: false) var int64Col: Int64 = 4
-    @Persisted(indexed: false) var stringCol: String
-    @Persisted(indexed: false) var dateCol: Date
-    @Persisted(indexed: false) var uuidCol: UUID
-    @Persisted(indexed: false) var objectIdCol: ObjectId
-    @Persisted(indexed: false) var intEnumCol: ModernIntEnum
-    @Persisted(indexed: false) var stringEnumCol: ModernStringEnum
+class ModernAllIndexableButNotIndexedObject: Object
+{
+  @Persisted(indexed: false) var boolCol: Bool
+  @Persisted(indexed: false) var intCol: Int
+  @Persisted(indexed: false) var int8Col: Int8 = 1
+  @Persisted(indexed: false) var int16Col: Int16 = 2
+  @Persisted(indexed: false) var int32Col: Int32 = 3
+  @Persisted(indexed: false) var int64Col: Int64 = 4
+  @Persisted(indexed: false) var stringCol: String
+  @Persisted(indexed: false) var dateCol: Date
+  @Persisted(indexed: false) var uuidCol: UUID
+  @Persisted(indexed: false) var objectIdCol: ObjectId
+  @Persisted(indexed: false) var intEnumCol: ModernIntEnum
+  @Persisted(indexed: false) var stringEnumCol: ModernStringEnum
 
-    @Persisted(indexed: false) var optIntCol: Int?
-    @Persisted(indexed: false) var optInt8Col: Int8?
-    @Persisted(indexed: false) var optInt16Col: Int16?
-    @Persisted(indexed: false) var optInt32Col: Int32?
-    @Persisted(indexed: false) var optInt64Col: Int64?
-    @Persisted(indexed: false) var optBoolCol: Bool?
-    @Persisted(indexed: false) var optStringCol: String?
-    @Persisted(indexed: false) var optDateCol: Date?
-    @Persisted(indexed: false) var optUuidCol: UUID?
-    @Persisted(indexed: false) var optObjectIdCol: ObjectId?
-    @Persisted(indexed: false) var optIntEnumCol: ModernIntEnum?
-    @Persisted(indexed: false) var optStringEnumCol: ModernStringEnum?
+  @Persisted(indexed: false) var optIntCol: Int?
+  @Persisted(indexed: false) var optInt8Col: Int8?
+  @Persisted(indexed: false) var optInt16Col: Int16?
+  @Persisted(indexed: false) var optInt32Col: Int32?
+  @Persisted(indexed: false) var optInt64Col: Int64?
+  @Persisted(indexed: false) var optBoolCol: Bool?
+  @Persisted(indexed: false) var optStringCol: String?
+  @Persisted(indexed: false) var optDateCol: Date?
+  @Persisted(indexed: false) var optUuidCol: UUID?
+  @Persisted(indexed: false) var optObjectIdCol: ObjectId?
+  @Persisted(indexed: false) var optIntEnumCol: ModernIntEnum?
+  @Persisted(indexed: false) var optStringEnumCol: ModernStringEnum?
 }
 
-class ModernCollectionsOfEnums: Object {
-    @Persisted var listInt: List<EnumInt>
-    @Persisted var listInt8: List<EnumInt8>
-    @Persisted var listInt16: List<EnumInt16>
-    @Persisted var listInt32: List<EnumInt32>
-    @Persisted var listInt64: List<EnumInt64>
-    @Persisted var listFloat: List<EnumFloat>
-    @Persisted var listDouble: List<EnumDouble>
-    @Persisted var listString: List<EnumString>
+class ModernCollectionsOfEnums: Object
+{
+  @Persisted var listInt: List<EnumInt>
+  @Persisted var listInt8: List<EnumInt8>
+  @Persisted var listInt16: List<EnumInt16>
+  @Persisted var listInt32: List<EnumInt32>
+  @Persisted var listInt64: List<EnumInt64>
+  @Persisted var listFloat: List<EnumFloat>
+  @Persisted var listDouble: List<EnumDouble>
+  @Persisted var listString: List<EnumString>
 
-    @Persisted var listIntOpt: List<EnumInt?>
-    @Persisted var listInt8Opt: List<EnumInt8?>
-    @Persisted var listInt16Opt: List<EnumInt16?>
-    @Persisted var listInt32Opt: List<EnumInt32?>
-    @Persisted var listInt64Opt: List<EnumInt64?>
-    @Persisted var listFloatOpt: List<EnumFloat?>
-    @Persisted var listDoubleOpt: List<EnumDouble?>
-    @Persisted var listStringOpt: List<EnumString?>
+  @Persisted var listIntOpt: List<EnumInt?>
+  @Persisted var listInt8Opt: List<EnumInt8?>
+  @Persisted var listInt16Opt: List<EnumInt16?>
+  @Persisted var listInt32Opt: List<EnumInt32?>
+  @Persisted var listInt64Opt: List<EnumInt64?>
+  @Persisted var listFloatOpt: List<EnumFloat?>
+  @Persisted var listDoubleOpt: List<EnumDouble?>
+  @Persisted var listStringOpt: List<EnumString?>
 
-    @Persisted var setInt: MutableSet<EnumInt>
-    @Persisted var setInt8: MutableSet<EnumInt8>
-    @Persisted var setInt16: MutableSet<EnumInt16>
-    @Persisted var setInt32: MutableSet<EnumInt32>
-    @Persisted var setInt64: MutableSet<EnumInt64>
-    @Persisted var setFloat: MutableSet<EnumFloat>
-    @Persisted var setDouble: MutableSet<EnumDouble>
-    @Persisted var setString: MutableSet<EnumString>
+  @Persisted var setInt: MutableSet<EnumInt>
+  @Persisted var setInt8: MutableSet<EnumInt8>
+  @Persisted var setInt16: MutableSet<EnumInt16>
+  @Persisted var setInt32: MutableSet<EnumInt32>
+  @Persisted var setInt64: MutableSet<EnumInt64>
+  @Persisted var setFloat: MutableSet<EnumFloat>
+  @Persisted var setDouble: MutableSet<EnumDouble>
+  @Persisted var setString: MutableSet<EnumString>
 
-    @Persisted var setIntOpt: MutableSet<EnumInt?>
-    @Persisted var setInt8Opt: MutableSet<EnumInt8?>
-    @Persisted var setInt16Opt: MutableSet<EnumInt16?>
-    @Persisted var setInt32Opt: MutableSet<EnumInt32?>
-    @Persisted var setInt64Opt: MutableSet<EnumInt64?>
-    @Persisted var setFloatOpt: MutableSet<EnumFloat?>
-    @Persisted var setDoubleOpt: MutableSet<EnumDouble?>
-    @Persisted var setStringOpt: MutableSet<EnumString?>
+  @Persisted var setIntOpt: MutableSet<EnumInt?>
+  @Persisted var setInt8Opt: MutableSet<EnumInt8?>
+  @Persisted var setInt16Opt: MutableSet<EnumInt16?>
+  @Persisted var setInt32Opt: MutableSet<EnumInt32?>
+  @Persisted var setInt64Opt: MutableSet<EnumInt64?>
+  @Persisted var setFloatOpt: MutableSet<EnumFloat?>
+  @Persisted var setDoubleOpt: MutableSet<EnumDouble?>
+  @Persisted var setStringOpt: MutableSet<EnumString?>
 
-    @Persisted var mapInt: Map<String, EnumInt>
-    @Persisted var mapInt8: Map<String, EnumInt8>
-    @Persisted var mapInt16: Map<String, EnumInt16>
-    @Persisted var mapInt32: Map<String, EnumInt32>
-    @Persisted var mapInt64: Map<String, EnumInt64>
-    @Persisted var mapFloat: Map<String, EnumFloat>
-    @Persisted var mapDouble: Map<String, EnumDouble>
-    @Persisted var mapString: Map<String, EnumString>
+  @Persisted var mapInt: Map<String, EnumInt>
+  @Persisted var mapInt8: Map<String, EnumInt8>
+  @Persisted var mapInt16: Map<String, EnumInt16>
+  @Persisted var mapInt32: Map<String, EnumInt32>
+  @Persisted var mapInt64: Map<String, EnumInt64>
+  @Persisted var mapFloat: Map<String, EnumFloat>
+  @Persisted var mapDouble: Map<String, EnumDouble>
+  @Persisted var mapString: Map<String, EnumString>
 
-    @Persisted var mapIntOpt: Map<String, EnumInt?>
-    @Persisted var mapInt8Opt: Map<String, EnumInt8?>
-    @Persisted var mapInt16Opt: Map<String, EnumInt16?>
-    @Persisted var mapInt32Opt: Map<String, EnumInt32?>
-    @Persisted var mapInt64Opt: Map<String, EnumInt64?>
-    @Persisted var mapFloatOpt: Map<String, EnumFloat?>
-    @Persisted var mapDoubleOpt: Map<String, EnumDouble?>
-    @Persisted var mapStringOpt: Map<String, EnumString?>
+  @Persisted var mapIntOpt: Map<String, EnumInt?>
+  @Persisted var mapInt8Opt: Map<String, EnumInt8?>
+  @Persisted var mapInt16Opt: Map<String, EnumInt16?>
+  @Persisted var mapInt32Opt: Map<String, EnumInt32?>
+  @Persisted var mapInt64Opt: Map<String, EnumInt64?>
+  @Persisted var mapFloatOpt: Map<String, EnumFloat?>
+  @Persisted var mapDoubleOpt: Map<String, EnumDouble?>
+  @Persisted var mapStringOpt: Map<String, EnumString?>
 }
 
-class LinkToModernCollectionsOfEnums: Object {
-    @Persisted var object: ModernCollectionsOfEnums?
-    @Persisted var list: List<ModernCollectionsOfEnums>
-    @Persisted var set: MutableSet<ModernCollectionsOfEnums>
-    @Persisted var map: Map<String, ModernCollectionsOfEnums?>
+class LinkToModernCollectionsOfEnums: Object
+{
+  @Persisted var object: ModernCollectionsOfEnums?
+  @Persisted var list: List<ModernCollectionsOfEnums>
+  @Persisted var set: MutableSet<ModernCollectionsOfEnums>
+  @Persisted var map: Map<String, ModernCollectionsOfEnums?>
 }
 
-class ModernListAnyRealmValueObject: Object {
-    @Persisted var value: List<AnyRealmValue>
+class ModernListAnyRealmValueObject: Object
+{
+  @Persisted var value: List<AnyRealmValue>
 }
 
-class ModernAllTypesProjection: Projection<ModernAllTypesObject> {
-    @Projected(\ModernAllTypesObject.boolCol) var boolCol
-    @Projected(\ModernAllTypesObject.intCol) var intCol: Int
-    @Projected(\ModernAllTypesObject.floatCol) var floatCol: Float
-    @Projected(\ModernAllTypesObject.doubleCol) var doubleCol: Double
-    @Projected(\ModernAllTypesObject.stringCol) var stringCol: String
-    @Projected(\ModernAllTypesObject.binaryCol) var binaryCol: Data
-    @Projected(\ModernAllTypesObject.dateCol) var dateCol: Date
-    @Projected(\ModernAllTypesObject.decimalCol) var decimalCol: Decimal128
-    @Projected(\ModernAllTypesObject.objectIdCol) var objectIdCol: ObjectId
-    @Projected(\ModernAllTypesObject.objectCol) var objectCol: ModernAllTypesObject?
-    @Projected(\ModernAllTypesObject.arrayCol) var arrayCol: List<ModernAllTypesObject>
-    @Projected(\ModernAllTypesObject.setCol) var setCol: MutableSet<ModernAllTypesObject>
-    @Projected(\ModernAllTypesObject.mapCol) var mapCol: Map<String, ModernAllTypesObject?>
-    @Projected(\ModernAllTypesObject.anyCol) var anyCol: AnyRealmValue
-    @Projected(\ModernAllTypesObject.uuidCol) var uuidCol: UUID
-    @Projected(\ModernAllTypesObject.intEnumCol) var intEnumCol: ModernIntEnum
-    @Projected(\ModernAllTypesObject.stringEnumCol) var stringEnumCol: ModernStringEnum
+class ModernAllTypesProjection: Projection<ModernAllTypesObject>
+{
+  @Projected(\ModernAllTypesObject.boolCol) var boolCol
+  @Projected(\ModernAllTypesObject.intCol) var intCol: Int
+  @Projected(\ModernAllTypesObject.floatCol) var floatCol: Float
+  @Projected(\ModernAllTypesObject.doubleCol) var doubleCol: Double
+  @Projected(\ModernAllTypesObject.stringCol) var stringCol: String
+  @Projected(\ModernAllTypesObject.binaryCol) var binaryCol: Data
+  @Projected(\ModernAllTypesObject.dateCol) var dateCol: Date
+  @Projected(\ModernAllTypesObject.decimalCol) var decimalCol: Decimal128
+  @Projected(\ModernAllTypesObject.objectIdCol) var objectIdCol: ObjectId
+  @Projected(\ModernAllTypesObject.objectCol) var objectCol: ModernAllTypesObject?
+  @Projected(\ModernAllTypesObject.arrayCol) var arrayCol: List<ModernAllTypesObject>
+  @Projected(\ModernAllTypesObject.setCol) var setCol: MutableSet<ModernAllTypesObject>
+  @Projected(\ModernAllTypesObject.mapCol) var mapCol: Map<String, ModernAllTypesObject?>
+  @Projected(\ModernAllTypesObject.anyCol) var anyCol: AnyRealmValue
+  @Projected(\ModernAllTypesObject.uuidCol) var uuidCol: UUID
+  @Projected(\ModernAllTypesObject.intEnumCol) var intEnumCol: ModernIntEnum
+  @Projected(\ModernAllTypesObject.stringEnumCol) var stringEnumCol: ModernStringEnum
 
-    @Projected(\ModernAllTypesObject.optIntCol) var optIntCol: Int?
-    @Projected(\ModernAllTypesObject.optFloatCol) var optFloatCol: Float?
-    @Projected(\ModernAllTypesObject.optDoubleCol) var optDoubleCol: Double?
-    @Projected(\ModernAllTypesObject.optBoolCol) var optBoolCol: Bool?
-    @Projected(\ModernAllTypesObject.optStringCol) var optStringCol: String?
-    @Projected(\ModernAllTypesObject.optBinaryCol) var optBinaryCol: Data?
-    @Projected(\ModernAllTypesObject.optDateCol) var optDateCol: Date?
-    @Projected(\ModernAllTypesObject.optDecimalCol) var optDecimalCol: Decimal128?
-    @Projected(\ModernAllTypesObject.optObjectIdCol) var optObjectIdCol: ObjectId?
-    @Projected(\ModernAllTypesObject.optUuidCol) var optUuidCol: UUID?
-    @Projected(\ModernAllTypesObject.optIntEnumCol) var optIntEnumCol: ModernIntEnum?
-    @Projected(\ModernAllTypesObject.optStringEnumCol) var optStringEnumCol: ModernStringEnum?
+  @Projected(\ModernAllTypesObject.optIntCol) var optIntCol: Int?
+  @Projected(\ModernAllTypesObject.optFloatCol) var optFloatCol: Float?
+  @Projected(\ModernAllTypesObject.optDoubleCol) var optDoubleCol: Double?
+  @Projected(\ModernAllTypesObject.optBoolCol) var optBoolCol: Bool?
+  @Projected(\ModernAllTypesObject.optStringCol) var optStringCol: String?
+  @Projected(\ModernAllTypesObject.optBinaryCol) var optBinaryCol: Data?
+  @Projected(\ModernAllTypesObject.optDateCol) var optDateCol: Date?
+  @Projected(\ModernAllTypesObject.optDecimalCol) var optDecimalCol: Decimal128?
+  @Projected(\ModernAllTypesObject.optObjectIdCol) var optObjectIdCol: ObjectId?
+  @Projected(\ModernAllTypesObject.optUuidCol) var optUuidCol: UUID?
+  @Projected(\ModernAllTypesObject.optIntEnumCol) var optIntEnumCol: ModernIntEnum?
+  @Projected(\ModernAllTypesObject.optStringEnumCol) var optStringEnumCol: ModernStringEnum?
 
-    @Projected(\ModernAllTypesObject.arrayBool) var arrayBool: List<Bool>
-    @Projected(\ModernAllTypesObject.arrayInt) var arrayInt: List<Int>
-    @Projected(\ModernAllTypesObject.arrayFloat) var arrayFloat: List<Float>
-    @Projected(\ModernAllTypesObject.arrayDouble) var arrayDouble: List<Double>
-    @Projected(\ModernAllTypesObject.arrayString) var arrayString: List<String>
-    @Projected(\ModernAllTypesObject.arrayBinary) var arrayBinary: List<Data>
-    @Projected(\ModernAllTypesObject.arrayDate) var arrayDate: List<Date>
-    @Projected(\ModernAllTypesObject.arrayDecimal) var arrayDecimal: List<Decimal128>
-    @Projected(\ModernAllTypesObject.arrayObjectId) var arrayObjectId: List<ObjectId>
-    @Projected(\ModernAllTypesObject.arrayAny) var arrayAny: List<AnyRealmValue>
-    @Projected(\ModernAllTypesObject.arrayUuid) var arrayUuid: List<UUID>
+  @Projected(\ModernAllTypesObject.arrayBool) var arrayBool: List<Bool>
+  @Projected(\ModernAllTypesObject.arrayInt) var arrayInt: List<Int>
+  @Projected(\ModernAllTypesObject.arrayFloat) var arrayFloat: List<Float>
+  @Projected(\ModernAllTypesObject.arrayDouble) var arrayDouble: List<Double>
+  @Projected(\ModernAllTypesObject.arrayString) var arrayString: List<String>
+  @Projected(\ModernAllTypesObject.arrayBinary) var arrayBinary: List<Data>
+  @Projected(\ModernAllTypesObject.arrayDate) var arrayDate: List<Date>
+  @Projected(\ModernAllTypesObject.arrayDecimal) var arrayDecimal: List<Decimal128>
+  @Projected(\ModernAllTypesObject.arrayObjectId) var arrayObjectId: List<ObjectId>
+  @Projected(\ModernAllTypesObject.arrayAny) var arrayAny: List<AnyRealmValue>
+  @Projected(\ModernAllTypesObject.arrayUuid) var arrayUuid: List<UUID>
 
-    @Projected(\ModernAllTypesObject.arrayOptBool) var arrayOptBool: List<Bool?>
-    @Projected(\ModernAllTypesObject.arrayOptInt) var arrayOptInt: List<Int?>
-    @Projected(\ModernAllTypesObject.arrayOptFloat) var arrayOptFloat: List<Float?>
-    @Projected(\ModernAllTypesObject.arrayOptDouble) var arrayOptDouble: List<Double?>
-    @Projected(\ModernAllTypesObject.arrayOptString) var arrayOptString: List<String?>
-    @Projected(\ModernAllTypesObject.arrayOptBinary) var arrayOptBinary: List<Data?>
-    @Projected(\ModernAllTypesObject.arrayOptDate) var arrayOptDate: List<Date?>
-    @Projected(\ModernAllTypesObject.arrayOptDecimal) var arrayOptDecimal: List<Decimal128?>
-    @Projected(\ModernAllTypesObject.arrayOptObjectId) var arrayOptObjectId: List<ObjectId?>
-    @Projected(\ModernAllTypesObject.arrayOptUuid) var arrayOptUuid: List<UUID?>
+  @Projected(\ModernAllTypesObject.arrayOptBool) var arrayOptBool: List<Bool?>
+  @Projected(\ModernAllTypesObject.arrayOptInt) var arrayOptInt: List<Int?>
+  @Projected(\ModernAllTypesObject.arrayOptFloat) var arrayOptFloat: List<Float?>
+  @Projected(\ModernAllTypesObject.arrayOptDouble) var arrayOptDouble: List<Double?>
+  @Projected(\ModernAllTypesObject.arrayOptString) var arrayOptString: List<String?>
+  @Projected(\ModernAllTypesObject.arrayOptBinary) var arrayOptBinary: List<Data?>
+  @Projected(\ModernAllTypesObject.arrayOptDate) var arrayOptDate: List<Date?>
+  @Projected(\ModernAllTypesObject.arrayOptDecimal) var arrayOptDecimal: List<Decimal128?>
+  @Projected(\ModernAllTypesObject.arrayOptObjectId) var arrayOptObjectId: List<ObjectId?>
+  @Projected(\ModernAllTypesObject.arrayOptUuid) var arrayOptUuid: List<UUID?>
 
-    @Projected(\ModernAllTypesObject.setBool) var setBool: MutableSet<Bool>
-    @Projected(\ModernAllTypesObject.setInt) var setInt: MutableSet<Int>
-    @Projected(\ModernAllTypesObject.setFloat) var setFloat: MutableSet<Float>
-    @Projected(\ModernAllTypesObject.setDouble) var setDouble: MutableSet<Double>
-    @Projected(\ModernAllTypesObject.setString) var setString: MutableSet<String>
-    @Projected(\ModernAllTypesObject.setBinary) var setBinary: MutableSet<Data>
-    @Projected(\ModernAllTypesObject.setDate) var setDate: MutableSet<Date>
-    @Projected(\ModernAllTypesObject.setDecimal) var setDecimal: MutableSet<Decimal128>
-    @Projected(\ModernAllTypesObject.setObjectId) var setObjectId: MutableSet<ObjectId>
-    @Projected(\ModernAllTypesObject.setAny) var setAny: MutableSet<AnyRealmValue>
-    @Projected(\ModernAllTypesObject.setUuid) var setUuid: MutableSet<UUID>
+  @Projected(\ModernAllTypesObject.setBool) var setBool: MutableSet<Bool>
+  @Projected(\ModernAllTypesObject.setInt) var setInt: MutableSet<Int>
+  @Projected(\ModernAllTypesObject.setFloat) var setFloat: MutableSet<Float>
+  @Projected(\ModernAllTypesObject.setDouble) var setDouble: MutableSet<Double>
+  @Projected(\ModernAllTypesObject.setString) var setString: MutableSet<String>
+  @Projected(\ModernAllTypesObject.setBinary) var setBinary: MutableSet<Data>
+  @Projected(\ModernAllTypesObject.setDate) var setDate: MutableSet<Date>
+  @Projected(\ModernAllTypesObject.setDecimal) var setDecimal: MutableSet<Decimal128>
+  @Projected(\ModernAllTypesObject.setObjectId) var setObjectId: MutableSet<ObjectId>
+  @Projected(\ModernAllTypesObject.setAny) var setAny: MutableSet<AnyRealmValue>
+  @Projected(\ModernAllTypesObject.setUuid) var setUuid: MutableSet<UUID>
 
-    @Projected(\ModernAllTypesObject.setOptBool) var setOptBool: MutableSet<Bool?>
-    @Projected(\ModernAllTypesObject.setOptInt) var setOptInt: MutableSet<Int?>
-    @Projected(\ModernAllTypesObject.setOptFloat) var setOptFloat: MutableSet<Float?>
-    @Projected(\ModernAllTypesObject.setOptDouble) var setOptDouble: MutableSet<Double?>
-    @Projected(\ModernAllTypesObject.setOptString) var setOptString: MutableSet<String?>
-    @Projected(\ModernAllTypesObject.setOptBinary) var setOptBinary: MutableSet<Data?>
-    @Projected(\ModernAllTypesObject.setOptDate) var setOptDate: MutableSet<Date?>
-    @Projected(\ModernAllTypesObject.setOptDecimal) var setOptDecimal: MutableSet<Decimal128?>
-    @Projected(\ModernAllTypesObject.setOptObjectId) var setOptObjectId: MutableSet<ObjectId?>
-    @Projected(\ModernAllTypesObject.setOptUuid) var setOptUuid: MutableSet<UUID?>
+  @Projected(\ModernAllTypesObject.setOptBool) var setOptBool: MutableSet<Bool?>
+  @Projected(\ModernAllTypesObject.setOptInt) var setOptInt: MutableSet<Int?>
+  @Projected(\ModernAllTypesObject.setOptFloat) var setOptFloat: MutableSet<Float?>
+  @Projected(\ModernAllTypesObject.setOptDouble) var setOptDouble: MutableSet<Double?>
+  @Projected(\ModernAllTypesObject.setOptString) var setOptString: MutableSet<String?>
+  @Projected(\ModernAllTypesObject.setOptBinary) var setOptBinary: MutableSet<Data?>
+  @Projected(\ModernAllTypesObject.setOptDate) var setOptDate: MutableSet<Date?>
+  @Projected(\ModernAllTypesObject.setOptDecimal) var setOptDecimal: MutableSet<Decimal128?>
+  @Projected(\ModernAllTypesObject.setOptObjectId) var setOptObjectId: MutableSet<ObjectId?>
+  @Projected(\ModernAllTypesObject.setOptUuid) var setOptUuid: MutableSet<UUID?>
 
-    @Projected(\ModernAllTypesObject.mapBool) var mapBool: Map<String, Bool>
-    @Projected(\ModernAllTypesObject.mapInt) var mapInt: Map<String, Int>
-    @Projected(\ModernAllTypesObject.mapFloat) var mapFloat: Map<String, Float>
-    @Projected(\ModernAllTypesObject.mapDouble) var mapDouble: Map<String, Double>
-    @Projected(\ModernAllTypesObject.mapString) var mapString: Map<String, String>
-    @Projected(\ModernAllTypesObject.mapBinary) var mapBinary: Map<String, Data>
-    @Projected(\ModernAllTypesObject.mapDate) var mapDate: Map<String, Date>
-    @Projected(\ModernAllTypesObject.mapDecimal) var mapDecimal: Map<String, Decimal128>
-    @Projected(\ModernAllTypesObject.mapObjectId) var mapObjectId: Map<String, ObjectId>
-    @Projected(\ModernAllTypesObject.mapAny) var mapAny: Map<String, AnyRealmValue>
-    @Projected(\ModernAllTypesObject.mapUuid) var mapUuid: Map<String, UUID>
+  @Projected(\ModernAllTypesObject.mapBool) var mapBool: Map<String, Bool>
+  @Projected(\ModernAllTypesObject.mapInt) var mapInt: Map<String, Int>
+  @Projected(\ModernAllTypesObject.mapFloat) var mapFloat: Map<String, Float>
+  @Projected(\ModernAllTypesObject.mapDouble) var mapDouble: Map<String, Double>
+  @Projected(\ModernAllTypesObject.mapString) var mapString: Map<String, String>
+  @Projected(\ModernAllTypesObject.mapBinary) var mapBinary: Map<String, Data>
+  @Projected(\ModernAllTypesObject.mapDate) var mapDate: Map<String, Date>
+  @Projected(\ModernAllTypesObject.mapDecimal) var mapDecimal: Map<String, Decimal128>
+  @Projected(\ModernAllTypesObject.mapObjectId) var mapObjectId: Map<String, ObjectId>
+  @Projected(\ModernAllTypesObject.mapAny) var mapAny: Map<String, AnyRealmValue>
+  @Projected(\ModernAllTypesObject.mapUuid) var mapUuid: Map<String, UUID>
 
-    @Projected(\ModernAllTypesObject.mapOptBool) var mapOptBool: Map<String, Bool?>
-    @Projected(\ModernAllTypesObject.mapOptInt) var mapOptInt: Map<String, Int?>
-    @Projected(\ModernAllTypesObject.mapOptFloat) var mapOptFloat: Map<String, Float?>
-    @Projected(\ModernAllTypesObject.mapOptDouble) var mapOptDouble: Map<String, Double?>
-    @Projected(\ModernAllTypesObject.mapOptString) var mapOptString: Map<String, String?>
-    @Projected(\ModernAllTypesObject.mapOptBinary) var mapOptBinary: Map<String, Data?>
-    @Projected(\ModernAllTypesObject.mapOptDate) var mapOptDate: Map<String, Date?>
-    @Projected(\ModernAllTypesObject.mapOptDecimal) var mapOptDecimal: Map<String, Decimal128?>
-    @Projected(\ModernAllTypesObject.mapOptObjectId) var mapOptObjectId: Map<String, ObjectId?>
-    @Projected(\ModernAllTypesObject.mapOptUuid) var mapOptUuid: Map<String, UUID?>
+  @Projected(\ModernAllTypesObject.mapOptBool) var mapOptBool: Map<String, Bool?>
+  @Projected(\ModernAllTypesObject.mapOptInt) var mapOptInt: Map<String, Int?>
+  @Projected(\ModernAllTypesObject.mapOptFloat) var mapOptFloat: Map<String, Float?>
+  @Projected(\ModernAllTypesObject.mapOptDouble) var mapOptDouble: Map<String, Double?>
+  @Projected(\ModernAllTypesObject.mapOptString) var mapOptString: Map<String, String?>
+  @Projected(\ModernAllTypesObject.mapOptBinary) var mapOptBinary: Map<String, Data?>
+  @Projected(\ModernAllTypesObject.mapOptDate) var mapOptDate: Map<String, Date?>
+  @Projected(\ModernAllTypesObject.mapOptDecimal) var mapOptDecimal: Map<String, Decimal128?>
+  @Projected(\ModernAllTypesObject.mapOptObjectId) var mapOptObjectId: Map<String, ObjectId?>
+  @Projected(\ModernAllTypesObject.mapOptUuid) var mapOptUuid: Map<String, UUID?>
 
-    @Projected(\ModernAllTypesObject.linkingObjects) var linkingObjects: LinkingObjects<ModernAllTypesObject>
+  @Projected(\ModernAllTypesObject.linkingObjects) var linkingObjects: LinkingObjects<ModernAllTypesObject>
 }

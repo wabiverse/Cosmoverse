@@ -81,19 +81,19 @@ try! stage.write {
 ### SwiftUI
 Cosmoverse integrates directly with SwiftUI, updating your views so you don't have to.
 ```swift
-struct SolarSystemView: View {
-  @ObservedResults(SolarSystem.self) var worlds
+struct MetaverseView: View {
+  @ObservedResults(SolarSystem.self) var solarSystems
 
   var body: some View {
     List {
-      ForEach(worlds) { world in
-        Text(world.name)
+      ForEach(solarSystems) { solarSystem in
+        Text(solarSystem.name)
       }
-      .onMove(perform: $worlds.move)
-      .onDelete(perform: $worlds.remove)
+      .onMove(perform: $solarSystem.move)
+      .onDelete(perform: $solarSystem.remove)
     }.navigationBarItems(trailing:
       Button("Add") {
-        $worlds.append(World())
+        $solarSystem.append(SolarSystem())
       }
     )
   }

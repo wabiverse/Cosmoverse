@@ -32,7 +32,7 @@ class SolarSystem: UsdGeom.Xform {
   @Persisted var prims: List<World>
 }
 // Use them like regular Swift objects.
-let world = UsdGeom.Sphere()
+let world = World()
 world.translate.set(GfVec3d(0.0, 0.0, 0.0))
 world.material.bind(UsdShade.Material())
 

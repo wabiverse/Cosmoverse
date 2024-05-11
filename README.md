@@ -51,7 +51,7 @@ let stage = try! Usd.Stage()
 
 var token: NotificationToken?
 
-let world = UsdGeom.Sphere()
+let world = World()
 world.translate.set(GfVec3d(0.0, 0.0, 0.0))
 
 // Create a world in the Usd.Stage.

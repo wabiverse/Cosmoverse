@@ -10,7 +10,6 @@ migrated to C++).
 * **Intuitive to Developers:** Cosmoverse’s object-oriented data model is simple to learn, doesn’t need an ORM, and lets you write less code.
 * **Built for Mobile:** Cosmoverse is fully-featured, lightweight, and efficiently uses memory, disk space, and battery life.
 * **Designed for Offline Use:** Cosmoverse’s local database persists data on-disk, so apps work as well offline as they do online.
-* **[MongoDB Atlas Device Sync](https://www.mongodb.com/docs/atlas/app-services/sync/)**: Makes it simple to keep data in sync across users, devices, and your backend in real-time. Get started for free with [a template application](#) and [create the cloud backend](#).
 * **[USD Metaverse Device Sync](#)**: Makes it simple to keep a Usd Stage in sync across users, devices, and your backend in real-time. Get started for free with [a template application](#) and [create the cloud backend](#).
 
 ## Object-Oriented: Streamline Your Code

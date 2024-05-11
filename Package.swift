@@ -6,146 +6,6 @@ import PackageDescription
 let coreVersion = Version("14.6.2")
 let cocoaVersion = Version("10.50.0")
 
-let cxxSettings: [CXXSetting] = [
-  .headerSearchPath("."),
-  .headerSearchPath("include"),
-  .define("REALM_SPM", to: "1"),
-  .define("REALM_ENABLE_SYNC", to: "1"),
-  .define("REALM_COCOA_VERSION", to: "@\"\(cocoaVersion)\""),
-  .define("REALM_VERSION", to: "\"\(coreVersion)\""),
-  .define("REALM_IOPLATFORMUUID", to: "@\"\(runCommand())\""),
-
-  .define("REALM_DEBUG", .when(configuration: .debug)),
-  .define("REALM_NO_CONFIG"),
-  .define("REALM_INSTALL_LIBEXECDIR", to: ""),
-  .define("REALM_ENABLE_ASSERTIONS", to: "1"),
-  .define("REALM_ENABLE_ENCRYPTION", to: "1"),
-
-  .define("REALM_VERSION_MAJOR", to: String(coreVersion.major)),
-  .define("REALM_VERSION_MINOR", to: String(coreVersion.minor)),
-  .define("REALM_VERSION_PATCH", to: String(coreVersion.patch)),
-  .define("REALM_VERSION_EXTRA", to: "\"\(coreVersion.prereleaseIdentifiers.first ?? "")\""),
-  .define("REALM_VERSION_STRING", to: "\"\(coreVersion)\""),
-  .define("REALM_ENABLE_GEOSPATIAL", to: "1"),
-]
-let testCxxSettings: [CXXSetting] = cxxSettings + [
-  // Command-line `swift build` resolves header search paths
-  // relative to the package root, while Xcode resolves them
-  // relative to the target root, so we need both.
-  .headerSearchPath("Realm"),
-  .headerSearchPath(".."),
-]
-
-/// SPM requires all targets to explicitly include or exclude every file, which
-/// gets very awkward when we have four targets building from a single directory
-let objectServerTestSources = [
-  "AsyncSyncTests.swift",
-  "ClientResetTests.swift",
-  "CombineSyncTests.swift",
-  "EventTests.swift",
-  "Object-Server-Tests-Bridging-Header.h",
-  "ObjectServerTests-Info.plist",
-  "RLMAsymmetricSyncServerTests.mm",
-  "RLMBSONTests.mm",
-  "RLMCollectionSyncTests.mm",
-  "RLMFlexibleSyncServerTests.mm",
-  "RLMMongoClientTests.mm",
-  "RLMObjectServerPartitionTests.mm",
-  "RLMObjectServerTests.mm",
-  "RLMServerTestObjects.h",
-  "RLMServerTestObjects.m",
-  "RLMSubscriptionTests.mm",
-  "RLMSyncTestCase.h",
-  "RLMSyncTestCase.mm",
-  "RLMUser+ObjectServerTests.h",
-  "RLMUser+ObjectServerTests.mm",
-  "RLMWatchTestUtility.h",
-  "RLMWatchTestUtility.m",
-  "RealmServer.swift",
-  "SwiftAsymmetricSyncServerTests.swift",
-  "SwiftCollectionSyncTests.swift",
-  "SwiftFlexibleSyncServerTests.swift",
-  "SwiftMongoClientTests.swift",
-  "SwiftObjectServerPartitionTests.swift",
-  "SwiftObjectServerTests.swift",
-  "SwiftServerObjects.swift",
-  "SwiftSyncTestCase.swift",
-  "SwiftUIServerTests.swift",
-  "TimeoutProxyServer.swift",
-  "WatchTestUtility.swift",
-  "certificates",
-  "config_overrides.json",
-  "include",
-  "setup_baas.rb",
-]
-
-func objectServerTestSupportTarget(name: String, dependencies: [Target.Dependency], sources: [String]) -> Target
-{
-  .target(
-    name: name,
-    dependencies: dependencies,
-    path: "Realm/ObjectServerTests",
-    exclude: objectServerTestSources.filter { !sources.contains($0) },
-    sources: sources,
-    cxxSettings: testCxxSettings
-  )
-}
-
-func objectServerTestTarget(name: String, sources: [String]) -> Target
-{
-  .testTarget(
-    name: name,
-    dependencies: ["RealmSwift", "RealmTestSupport", "RealmSyncTestSupport", "RealmSwiftSyncTestSupport"],
-    path: "Realm/ObjectServerTests",
-    exclude: objectServerTestSources.filter { !sources.contains($0) },
-    sources: sources,
-    cxxSettings: testCxxSettings
-  )
-}
-
-func runCommand() -> String
-{
-  let task = Process()
-  let pipe = Pipe()
-
-  task.executableURL = URL(fileURLWithPath: "/usr/sbin/ioregg")
-  task.arguments = ["-rd1", "-c", "IOPlatformExpertDevice"]
-  task.standardInput = nil
-  task.standardError = nil
-  task.standardOutput = pipe
-  do
-  {
-    try task.run()
-  }
-  catch
-  {
-    return ""
-  }
-
-  let data = pipe.fileHandleForReading.readDataToEndOfFile()
-  let output = String(data: data, encoding: .utf8) ?? ""
-  let range = NSRange(output.startIndex..., in: output)
-  guard let regex = try? NSRegularExpression(pattern: ".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", options: .caseInsensitive),
-        let firstMatch = regex.matches(in: output, range: range).first
-  else
-  {
-    return ""
-  }
-
-  let matches = (0 ..< firstMatch.numberOfRanges).compactMap
-  { ind -> String? in
-    let matchRange = firstMatch.range(at: ind)
-    if matchRange != range,
-       let substringRange = Range(matchRange, in: output)
-    {
-      let capture = String(output[substringRange])
-      return capture
-    }
-    return nil
-  }
-  return matches.last ?? ""
-}
-
 let package = Package(
   name: "Realm",
   platforms: [
@@ -174,7 +34,6 @@ let package = Package(
     .target(
       name: "Realm",
       dependencies: [.product(name: "RealmCore", package: "realm-core")],
-      path: ".",
       exclude: [
         "CHANGELOG.md",
         "CONTRIBUTING.md",
@@ -279,7 +138,28 @@ let package = Package(
         .copy("Realm/PrivacyInfo.xcprivacy")
       ],
       publicHeadersPath: "include",
-      cxxSettings: cxxSettings,
+      cxxSettings: [
+        .headerSearchPath("."),
+        .headerSearchPath("include"),
+        .define("REALM_SPM", to: "1"),
+        .define("REALM_ENABLE_SYNC", to: "1"),
+        .define("REALM_COCOA_VERSION", to: "@\"\(cocoaVersion)\""),
+        .define("REALM_VERSION", to: "\"\(coreVersion)\""),
+        .define("REALM_IOPLATFORMUUID", to: "@\"\(runCommand())\""),
+
+        .define("REALM_DEBUG", .when(configuration: .debug)),
+        .define("REALM_NO_CONFIG"),
+        .define("REALM_INSTALL_LIBEXECDIR", to: ""),
+        .define("REALM_ENABLE_ASSERTIONS", to: "1"),
+        .define("REALM_ENABLE_ENCRYPTION", to: "1"),
+
+        .define("REALM_VERSION_MAJOR", to: String(coreVersion.major)),
+        .define("REALM_VERSION_MINOR", to: String(coreVersion.minor)),
+        .define("REALM_VERSION_PATCH", to: String(coreVersion.patch)),
+        .define("REALM_VERSION_EXTRA", to: "\"\(coreVersion.prereleaseIdentifiers.first ?? "")\""),
+        .define("REALM_VERSION_STRING", to: "\"\(coreVersion)\""),
+        .define("REALM_ENABLE_GEOSPATIAL", to: "1"),
+      ],
       linkerSettings: [
         .linkedFramework("UIKit", .when(platforms: [.iOS, .macCatalyst, .tvOS, .watchOS]))
       ]
@@ -287,7 +167,6 @@ let package = Package(
     .target(
       name: "RealmSwift",
       dependencies: ["Realm"],
-      path: "RealmSwift",
       exclude: [
         "Nonsync.swift",
         "RealmSwift-Info.plist",
@@ -301,7 +180,10 @@ let package = Package(
       name: "RealmTestSupport",
       dependencies: ["Realm"],
       path: "Realm/TestUtils",
-      cxxSettings: testCxxSettings
+      cxxSettings: [
+        .headerSearchPath("Realm"),
+        .headerSearchPath(".."),
+      ]
     ),
     .target(
       name: "RealmSwiftTestSupport",
@@ -331,7 +213,10 @@ let package = Package(
         "SwiftUISyncTestHost",
         "SwiftUISyncTestHostUITests"
       ],
-      cxxSettings: testCxxSettings
+      cxxSettings: [
+        .headerSearchPath("Realm"),
+        .headerSearchPath(".."),
+      ]
     ),
     .testTarget(
       name: "RealmObjcSwiftTests",
@@ -349,34 +234,10 @@ let package = Package(
         "TestUtils.swift"
       ]
     ),
-
-    // Object server tests have support code written in both obj-c and
-    // Swift which is used by both the obj-c and swift test code. SPM
-    // doesn't support mixed targets, so this ends up requiring four
-    // different targets.
-    objectServerTestSupportTarget(
-      name: "RealmSyncTestSupport",
-      dependencies: ["Realm", "RealmSwift", "RealmTestSupport"],
-      sources: [
-        "RLMServerTestObjects.m",
-        "RLMSyncTestCase.mm",
-        "RLMUser+ObjectServerTests.mm",
-        "RLMWatchTestUtility.m",
-      ]
-    ),
-    objectServerTestSupportTarget(
-      name: "RealmSwiftSyncTestSupport",
-      dependencies: ["RealmSwift", "RealmTestSupport", "RealmSyncTestSupport", "RealmSwiftTestSupport"],
-      sources: [
-        "RealmServer.swift",
-        "SwiftServerObjects.swift",
-        "SwiftSyncTestCase.swift",
-        "TimeoutProxyServer.swift",
-        "WatchTestUtility.swift",
-      ]
-    ),
-    objectServerTestTarget(
-      name: "SwiftObjectServerTests",
+    .testTarget(
+      name: "ObjectServerTests",
+      dependencies: ["RealmSwift", "RealmTestSupport", "RealmSyncTestSupport", "RealmSwiftSyncTestSupport"],
+      exclude: [],
       sources: [
         "AsyncSyncTests.swift",
         "ClientResetTests.swift",
@@ -389,21 +250,55 @@ let package = Package(
         "SwiftObjectServerPartitionTests.swift",
         "SwiftObjectServerTests.swift",
         "SwiftUIServerTests.swift",
-      ]
-    ),
-    objectServerTestTarget(
-      name: "ObjcObjectServerTests",
-      sources: [
-        "RLMAsymmetricSyncServerTests.mm",
-        "RLMBSONTests.mm",
-        "RLMCollectionSyncTests.mm",
-        "RLMFlexibleSyncServerTests.mm",
-        "RLMMongoClientTests.mm",
-        "RLMObjectServerPartitionTests.mm",
-        "RLMObjectServerTests.mm",
-        "RLMSubscriptionTests.mm",
+      ],
+      cxxSettings: [
+        .headerSearchPath("Realm"),
+        .headerSearchPath(".."),
       ]
     )
   ],
   cxxLanguageStandard: .cxx20
 )
+
+func runCommand() -> String
+{
+  let task = Process()
+  let pipe = Pipe()
+
+  task.executableURL = URL(fileURLWithPath: "/usr/sbin/ioregg")
+  task.arguments = ["-rd1", "-c", "IOPlatformExpertDevice"]
+  task.standardInput = nil
+  task.standardError = nil
+  task.standardOutput = pipe
+  do
+  {
+    try task.run()
+  }
+  catch
+  {
+    return ""
+  }
+
+  let data = pipe.fileHandleForReading.readDataToEndOfFile()
+  let output = String(data: data, encoding: .utf8) ?? ""
+  let range = NSRange(output.startIndex..., in: output)
+  guard let regex = try? NSRegularExpression(pattern: ".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", options: .caseInsensitive),
+        let firstMatch = regex.matches(in: output, range: range).first
+  else
+  {
+    return ""
+  }
+
+  let matches = (0 ..< firstMatch.numberOfRanges).compactMap
+  { ind -> String? in
+    let matchRange = firstMatch.range(at: ind)
+    if matchRange != range,
+       let substringRange = Range(matchRange, in: output)
+    {
+      let capture = String(output[substringRange])
+      return capture
+    }
+    return nil
+  }
+  return matches.last ?? ""
+}

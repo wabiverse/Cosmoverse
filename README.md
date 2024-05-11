@@ -93,7 +93,7 @@ struct MetaverseView: View {
       .onDelete(perform: $solarSystem.remove)
     }.navigationBarItems(trailing:
       Button("Add") {
-        $solarSystem.append(SolarSystem())
+        $solarSystems.append(SolarSystem())
       }
     )
   }

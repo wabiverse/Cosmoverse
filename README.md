@@ -1,5 +1,12 @@
 # About Cosmoverse Database
 
+> [!IMPORANT]
+> Please do not attempt to build this project or submit
+> issue tickets, as this project is in a early planning
+> phase in an effort to see what's possible.
+>
+> Thanks for your patience.
+
 Cosmoverse is a database that runs directly inside computers, phones, tablets, or wearables like headsets.
 This repository holds the source code for the **Linux**, **Windows**, **macOS**, **iOS**, **visionOS**,
 **tvOS**, and **watchOS** versions of Cosmoverse Swift & Cosmoverse C++ (with deprecated Objective-C that is being

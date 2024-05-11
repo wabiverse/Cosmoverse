@@ -1,6 +1,6 @@
 # About Cosmoverse Database
 
-> [!IMPORANT]
+> [!IMPORTANT]
 > Please do not attempt to build this project or submit
 > issue tickets, as this project is in a early planning
 > phase in an effort to see what's possible.
